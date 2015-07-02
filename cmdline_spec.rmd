@@ -1,0 +1,126 @@
+# Command line specification
+
+## Rationale
+
+In an effort to provide a maximally compatible `argparse` replacement that does
+not rely on Python, this document aims to specify a minimal set of supported
+command line argument options. This should avoid feature creep and remain
+quickly implementable — and optionally extensible. On the other hand, it should
+provide all or most of the standard Unix command line syntax, and offer large
+compatibility with it.
+
+The API is intentionally not identical to `argparse`’s (pythonic) API. Instead,
+an effort is made to provide an opinionated API familiar to R users.
+
+## Supported command line syntax
+
+* Supported are both short and long named arguments and positional arguments,
+  all of which may be declared as optional and mandatory, and assigned default
+  values
+* Short arguments are preceded by `-` and may be grouped into one long string
+* Long arguments are preceded by `--`
+* Values of short arguments are separated by whitespace or directly adjacent
+* Values of long arguments are separated by whitespace, assignment (`=`) or both
+* Positional arguments follow named arguments. The special argument `--`
+  (without a following name) specifies that all following arguments are
+  positional, even if they start with one or more dashes
+* Even if undeclared, the special named argument `--help` (`-h`) will print a
+  summary of the available command line arguments to stderr and exit
+* The same happens when an invalid argument is recognised, but in this case
+  additionally with a nonzero exit status
+
+## API
+
+Command line arguments are specified via `opt`:
+
+```{r}
+opt = function (short, long, default, description, validation) {
+    # FIXME: Make default optional, which makes `opt` mandatory
+    stopifnot(is.character(short) && length(short) == 1)
+    stopifnot(is.character(long) && length(long) == 1)
+    stopifnot(length(default) == 1)
+    stopifnot(is.character(description) && length(description) == 1)
+
+    if (is.null(names(default))) {
+        stopifnot(long != '')
+        variable_name = long
+    }
+    else
+        variable_name = names(default)
+
+    if (missing(validation))
+        validation = function (x) TRUE
+    else
+        stopifnot(inherits(validation, 'function') &&
+                  length(formals(validation)) > 0)
+
+    structure(as.list(environment()), class = 'sys$cmdline$opt')
+}
+```
+
+```{r echo=FALSE}
+`print.sys$cmdline$opt` = function (x, ...) {
+    cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
+                x$variable_name,
+                x$short,
+                x$long,
+                x$default,
+                x$description))
+    invisible(x)
+}
+```
+
+## Test cases
+
+```{r echo=FALSE, show='hide'}
+# TODO: Implement
+test = function (cmdline, spec, ...) {
+    #parsed = parse_cmd(cmdline, spec)
+    #testthat::expect_equals(parsed, list(...))
+    spec
+}
+```
+
+Display the help and exit.
+
+```{r}
+test('', NULL)
+test('-h', NULL)
+test('--help', NULL)
+```
+
+Collection of short arguments.
+
+```{r}
+test('-v',
+     list(opt('v', 'verbose', FALSE, 'verbose logging')),
+     list(verbose = TRUE))
+test('-O2',
+     list(opt('O', '', c(optimization = 1), 'optimization level')),
+     list(optimization = 2))
+# special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
+test('-vvv', list(opt('v', '', c(verbose = ''), 'level of verbose logging',
+                      function (value) value %in% c('', 'v', 'vv'))),
+     list(verbose = 'vv'))
+# The following doesn’t make sense but hey.
+test('-vs', list(opt('v', 'verbose', FALSE, 'verbose logging'),
+                 opt('s', 'silent', FALSE, 'silent output')),
+     list(verbose = TRUE, silent = TRUE))
+```
+
+Equivalently, long options.
+
+```{r}
+test('--verbose',
+     list(opt('v', 'verbose', FALSE, 'verbose logging')),
+     list(verbose = TRUE))
+test('--optim 2',
+     list(opt('O', 'optim', c(optimization = 1), 'optimization level')),
+     list(optimization = 2))
+test('--optim=2',
+     list(opt('O', 'optim', c(optimization = 1), 'optimization level')),
+     list(optimization = 2))
+test('--verbose --silent', list(opt('v', 'verbose', FALSE, 'verbose logging'),
+                                opt('s', 'silent', FALSE, 'silent output')),
+     list(verbose = TRUE, silent = TRUE))
+```
