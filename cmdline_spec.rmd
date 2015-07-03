@@ -58,6 +58,16 @@ opt = function (short, long, description, default, validation) {
 }
 ```
 
+Positional argument specified via `arg`:
+
+```{r}
+arg = function (name, description, default) {
+    force(name)
+    force(description)
+    structure(as.list(environment()), class = 'sys$cmdline$arg')
+}
+```
+
 ```{r echo=FALSE}
 `print.sys$cmdline$opt` = function (x, ...) {
     cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
@@ -68,7 +78,34 @@ opt = function (short, long, description, default, validation) {
                 x$description))
     invisible(x)
 }
+
+`print.sys$cmdline$arg` = function (x, ...) {
+    if (x$default != quote(expr = ))
+        cat(sprintf("[%s] (default: %s) %s\n",
+                    x$name, x$default, x$description))
+    else
+        cat(sprintf("%s: %s\n", x$name, x$description))
+    invisible(x)
+}
 ```
+
+Used to construct command line specification as follows:
+
+```{r eval=FALSE}
+sys$parse_cmdline(sys$opt(…), sys$opt(…), sys$arg(…))
+sys$parse_cmdline(opt(…), opt(…), arg(…))
+sys$parse_cmdline(opt(…), opt(…), arg(…), c(alternative, command))
+```
+
+… in other words, inside a `sys$parse_cmdline` call, `opt` and `arg` are
+available without qualification. The last argument of `sys$parse_cmdline` can be
+set to a command line invocation to parse (as a vector of arguments as they
+would appear on the command line). If none is given, `sys$args` is used.
+
+The command line is given as an argument rather than a string since the parsing
+of the command line string into separate arguments is performed by the shell
+itself, and the exact algorithm may differ from shell to shell (especially
+concerning the escaping of special characters).
 
 ## Test cases
 
