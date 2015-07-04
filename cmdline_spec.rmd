@@ -35,18 +35,20 @@ Command line arguments are specified via `opt`:
 
 ```{r}
 opt = function (short, long, description, default, validation) {
-    # FIXME: Make default optional, which makes `opt` mandatory
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
     stopifnot(is.character(description) && length(description) == 1)
-    stopifnot(length(default) <= 1)
+    stopifnot(missing(default) || length(default) <= 1)
 
-    if (is.null(names(default))) {
+    optional = ! missing(default)
+    if (optional && ! is.null(names(default))) {
+        variable_name = names(default)
+        names(default) = NULL
+    }
+    else {
         stopifnot(long != '')
         variable_name = long
     }
-    else
-        variable_name = names(default)
 
     if (missing(validation))
         validation = function (x) TRUE
@@ -64,25 +66,33 @@ Positional argument specified via `arg`:
 arg = function (name, description, default) {
     force(name)
     force(description)
+    optional = ! missing(default)
     structure(as.list(environment()), class = 'sys$cmdline$arg')
 }
 ```
 
 ```{r echo=FALSE}
 `print.sys$cmdline$opt` = function (x, ...) {
-    cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
-                x$variable_name,
-                x$short,
-                x$long,
-                x$default,
-                x$description))
+    if (x$optional)
+        cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
+                    x$variable_name,
+                    x$short,
+                    x$long,
+                    deparse(x$default),
+                    x$description))
+    else
+        cat(sprintf("%s: -%s|--%s %s\n",
+                    x$variable_name,
+                    x$short,
+                    x$long,
+                    x$description))
     invisible(x)
 }
 
 `print.sys$cmdline$arg` = function (x, ...) {
-    if (x$default != quote(expr = ))
+    if (x$optional)
         cat(sprintf("[%s] (default: %s) %s\n",
-                    x$name, x$default, x$description))
+                    x$name, deparse(x$default), x$description))
     else
         cat(sprintf("%s: %s\n", x$name, x$description))
     invisible(x)
@@ -136,7 +146,7 @@ test('-O2',
      list(opt('O', '', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
 test('-u username',
-     list(opt('u', 'user', 'the username', NULL)),
+     list(opt('u', 'user', 'the username')),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
 test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
