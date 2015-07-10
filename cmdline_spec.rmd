@@ -29,6 +29,32 @@ an effort is made to provide an opinionated API familiar to R users.
 * The same happens when an invalid argument is recognised, but in this case
   additionally with a nonzero exit status
 
+**TODO** Support options with different defaults depending on whether they are
+given or not. Example:
+
+Given a specification `opt('s', 'skip', default = default(1, 2))` (or similar),
+the following command lines
+
+1. `''`
+2. `'--skip'`
+3. `'--skip=2'`
+
+Have the semantics
+
+1. `skip == 0`
+2. `skip == 1`
+3. `skip == 2`.
+
+**TODO** Support arbitrary number of positional arguments:
+
+Given `list(arg('foo', ''), arg_list('bar', ''))`, the command line
+
+    'foo bar baz'
+
+yields
+
+    list(foo = 'foo', bar = c('bar', 'baz'))
+
 ## API
 
 Command line arguments are specified via `opt`:
