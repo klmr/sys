@@ -30,6 +30,17 @@ parse = function (...) {
 }
 
 .parse = function (cmdline, opts_long, opts_short, positional) {
+    check_positional_arg_valid = function ()
+        if (pos > length(positional)) {
+            # FIXME: Allow accepting arbitrary number of positional args
+            trunc = if (nchar(token) > 20)
+                paste0(substr(token, 19), '…')
+            else
+                token
+            stop(sprintf('Unexpected positional argument %s.',
+                         sQuote(trunc)))
+        }
+
     DEFAULT = 0
     VALUE = 1
     TRAILING = 2
@@ -76,17 +87,11 @@ parse = function (...) {
             }
             else if (grepl('^-', token)) {
                 name = substr(token, 2, 2)
+                # TODO: store option
+                # TODO: look for value and/or other options
             }
             else {
-                if (pos > length(positional)) {
-                    # FIXME: Allow accepting arbitrary number of positional args
-                    trunc = if (nchar(token) > 20)
-                        paste0(substr(token, 19), '…')
-                    else
-                        token
-                    stop(sprintf('Unexpected positional argument %s.',
-                                 sQuote(trunc)))
-                }
+                check_positional_arg_valid()
 
                 result[[positional[[pos]]$name]] = token
                 pos = pos + 1
@@ -95,6 +100,7 @@ parse = function (...) {
         else if (state == VALUE) {
         }
         else if (state == TRAILING) {
+            check_positional_arg_valid()
         }
     }
 
