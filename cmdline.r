@@ -70,6 +70,7 @@ usage = function (options) {
     state = DEFAULT
     result = list()
     arg_pos = 1
+    short_opt_pos = 1
 
     while (i <= length(cmdline)) {
         token = cmdline[i]
@@ -109,9 +110,36 @@ usage = function (options) {
                 }
             }
             else if (grepl('^-', token)) {
-                name = substr(token, 2, 2)
-                # TODO: store option
-                # TODO: look for value and/or other options
+                name = substr(token, short_opt_pos + 1, short_opt_pos + 1)
+                option = opts_short[[name]]
+
+                if (is.null(option))
+                    stop(sprintf('Invalid option %s',
+                                 sQuote(paste0('-', name))))
+
+                if (is.logical(option$default)) {
+                    result[[option$name]] = ! option$default
+
+                    if (nchar(token) > short_opt_pos + 1) {
+                        # Consume next short option in current token next.
+                        i = i - 1
+                        short_opt_pos = short_opt_pos + 1
+                    }
+                    else
+                        short_opt_pos = 1
+                }
+                else {
+                    value = substr(token, short_opt_pos + 2, nchar(token))
+
+                    if (value == '') {
+                        current_option = option
+                        state = VALUE
+                    }
+                    else
+                        result[[option$name]] = .as(value, .opttype(option))
+
+                    short_opt_pos = 1
+                }
             }
             else {
                 check_positional_arg_valid()
