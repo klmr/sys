@@ -29,6 +29,28 @@ parse = function (...) {
         result
 }
 
+usage = function (options) {
+    cmd_usage = paste(.sys$script_name,
+                      paste(sapply(options, .option_syntax), collapse = ' '))
+    arg_usage = paste(sapply(options, .option_description), collapse = ' ')
+    sprintf('Usage: %s\n\n%s', cmd_usage, arg_usage)
+}
+
+.option_syntax = function (option) {
+    # TODO: Should be “[--long|-s] name” or “[--long|-s]” or “name”
+    # TODO: Optional values in “[…]”
+    option$name
+}
+
+.option_description = function (option) {
+    # TODO: Make this right
+    exdent = 12
+    strwrap(option$description,
+            width = getOption('width') - exdent,
+            exdent = exdent,
+            initial = sprintf('% 10s: ', option$name))
+}
+
 .parse = function (cmdline, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (pos > length(positional)) {
