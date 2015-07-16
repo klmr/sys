@@ -98,14 +98,16 @@ usage = function (options) {
                         stop(sprintf('Invalid value: option %s is a toggle.',
                                      sQuote(paste0('--', name))))
 
-                    result[[name]] = ! option$default
+                    result[[option$name]] = ! option$default
                 }
                 else {
-                    if (attr(match, 'capture.length')[, 'eq'] == 0)
+                    if (attr(match, 'capture.length')[, 'eq'] == 0) {
+                        current_option = option
                         state = VALUE
+                    }
                     else {
                         value = .reggroup(match, token, 'value')
-                        result[[name]] = as(value, .opttype(option))
+                        result[[option$name]] = .as(value, .opttype(option))
                     }
                 }
             }
@@ -149,6 +151,8 @@ usage = function (options) {
             }
         }
         else if (state == VALUE) {
+            result[[current_option$name]] = .as(token, .opttype(current_option))
+            state = DEFAULT
         }
         else if (state == TRAILING) {
             check_positional_arg_valid()
