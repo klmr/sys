@@ -1,4 +1,4 @@
-sys = modules::import('../sys')
+.sys = modules::import('../sys')
 
 parse = function (...) {
     args_definition = list(...)
@@ -21,11 +21,11 @@ parse = function (...) {
                  silent = TRUE)
     if (inherits(result, 'try-error')) {
         usage(options)
-        sys$exit(1, result)
+        .sys$exit(1, result)
     }
     else if (result == 'help') {
         usage(options)
-        sys$exit(0)
+        .sys$exit(0)
     }
 }
 
