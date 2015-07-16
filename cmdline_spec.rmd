@@ -2,15 +2,19 @@
 
 ## Rationale
 
-In an effort to provide a maximally compatible `argparse` replacement that does
-not rely on Python, this document aims to specify a minimal set of supported
-command line argument options. This should avoid feature creep and remain
-quickly implementable — and optionally extensible. On the other hand, it should
-provide all or most of the standard Unix command line syntax, and offer large
-compatibility with it.
+In an effort to provide a maximally compatible [`argparse`][argparse]
+replacement that does not rely on Python, this document aims to specify a
+minimal set of supported command line argument options. This should avoid
+feature creep and remain quickly implementable — and optionally extensible. On
+the other hand, it should provide all or most of the standard POSIX/[GNU
+command line syntax][], and offer large compatibility with it (except in cases
+where it intentionally diverges).
 
 The API is intentionally not identical to `argparse`’s (pythonic) API. Instead,
 an effort is made to provide an opinionated API familiar to R users.
+
+[argparse]: https://cran.r-project.org/web/packages/argparse/index.html
+[GNU command line syntax]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
 ## Supported command line syntax
 
