@@ -57,76 +57,22 @@ Given `list(arg('foo', ''), arg_list('bar', ''))`, the command line
 
 yields
 
-    list(foo = 'foo', bar = c('bar', 'baz'))
+```{r eval=FALSE}
+list(foo = 'foo', bar = c('bar', 'baz'))
+```
 
 ## API
 
 Command line arguments are specified via `opt`:
 
-```{r}
-opt = function (short, long, description, default, validation) {
-    stopifnot(is.character(short) && length(short) == 1)
-    stopifnot(is.character(long) && length(long) == 1)
-    stopifnot(is.character(description) && length(description) == 1)
-    stopifnot(missing(default) || length(default) <= 1)
-
-    optional = ! missing(default)
-    if (optional && ! is.null(names(default))) {
-        variable_name = names(default)
-        names(default) = NULL
-    }
-    else {
-        stopifnot(long != '')
-        variable_name = long
-    }
-
-    if (missing(validation))
-        validation = function (x) TRUE
-    else
-        stopifnot(inherits(validation, 'function') &&
-                  length(formals(validation)) > 0)
-
-    structure(as.list(environment()), class = 'sys$cmdline$opt')
-}
+```{r eval=FALSE}
+opt = function (short, long, description, default, validation)
 ```
 
-Positional argument specified via `arg`:
+Positional argument are specified via `arg`:
 
-```{r}
-arg = function (name, description, default) {
-    force(name)
-    force(description)
-    optional = ! missing(default)
-    structure(as.list(environment()), class = 'sys$cmdline$arg')
-}
-```
-
-```{r echo=FALSE}
-`print.sys$cmdline$opt` = function (x, ...) {
-    if (x$optional)
-        cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
-                    x$variable_name,
-                    x$short,
-                    x$long,
-                    deparse(x$default),
-                    x$description))
-    else
-        cat(sprintf("%s: -%s|--%s %s\n",
-                    x$variable_name,
-                    x$short,
-                    x$long,
-                    x$description))
-    invisible(x)
-}
-
-`print.sys$cmdline$arg` = function (x, ...) {
-    if (x$optional)
-        cat(sprintf("[%s] (default: %s) %s\n",
-                    x$name, deparse(x$default), x$description))
-    else
-        cat(sprintf("%s: %s\n", x$name, x$description))
-    invisible(x)
-}
+```{r eval=FALSE}
+arg = function (name, description, default)
 ```
 
 Used to construct command line specification as follows:
@@ -150,11 +96,32 @@ concerning the escaping of special characters).
 ## Test cases
 
 ```{r echo=FALSE, show='hide'}
+modules::import('./cmdline', attach = TRUE)
+
+# Make testable
+
+test_env = environment(parse)
+unlockBinding('.sys', test_env)
+test_env$.sys = list(exit = function (code, msg) msg)
+
 # TODO: Implement
-test = function (cmdline, spec, ...) {
-    #parsed = parse_cmd(cmdline, spec)
-    #testthat::expect_equals(parsed, list(...))
-    spec
+test = function (cmdline, spec, expected) {
+    if (missing(expected))
+        expected = 'help'
+    args = spec
+    args[[length(args) + 1]] = cmdline
+    parsed = do.call(parse, args)
+
+    if (is.list(parsed)) {
+        if (! identical(parsed, expected)) {
+            if (length(parsed) == 0)
+                parsed = ''
+            warning(sprintf('FAILED test %s: %s',
+                            paste(cmdline, collapse = ' '), deparse(parsed)))
+        }
+    }
+    else if (is.character(parsed))
+        message(parsed)
 }
 ```
 
