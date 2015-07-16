@@ -77,6 +77,8 @@ usage = function (options) {
         if (state == DEFAULT) {
             if (token == '--')
                 state = TRAILING
+            else if (token == '--help' || token == '-h')
+                return('help')
             else if (grepl('^--', token)) {
                 match = regexpr(long_option_pattern, token, perl = TRUE)
                 if (match == -1)
