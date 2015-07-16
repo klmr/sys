@@ -162,6 +162,8 @@ usage = function (options) {
         }
     }
 
+    # TODO: The following incorrectly ignores positional arguments
+
     # Set optional arguments, if not given.
 
     optional = Filter(function (x) x$optional, options)
@@ -261,8 +263,11 @@ modules::register_S3_method('print', 'sys$cmdline$arg', `print.sys$cmdline$arg`)
     substr(string, start, stop)
 }
 
+.as = methods::as
+
 .opttype = function (option) {
-    if (is.null(option$default))
+    # TODO: Allow specifying type explicitly
+    if (! option$optional)
         'character'
     else
         typeof(option$default)
