@@ -15,7 +15,7 @@ parse = function (...) {
     opts_long = setNames(options, lapply(options, `[[`, 'long'))
     opts_short = setNames(options, lapply(options, `[[`, 'short'))
     args = Filter(function (x) inherits(x, 'sys$cmdline$arg'), args_definition)
-    positional = setNames(args, lapply(args, `[[`, name))
+    positional = setNames(args, lapply(args, `[[`, 'name'))
 
     result = try(.parse(cmdline, options, opts_long, opts_short, positional),
                  silent = TRUE)
