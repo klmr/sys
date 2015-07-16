@@ -51,10 +51,9 @@ usage = function (options) {
             initial = sprintf('% 10s: ', option$name))
 }
 
-.parse = function (cmdline, opts_long, opts_short, positional) {
+.parse = function (cmdline, options, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
-        if (pos > length(positional)) {
-            # FIXME: Allow accepting arbitrary number of positional args
+        if (arg_pos > length(positional)) {
             trunc = if (nchar(token) > 20)
                 paste0(substr(token, 19), '…')
             else
@@ -70,7 +69,7 @@ usage = function (options) {
     i = 1
     state = DEFAULT
     result = list()
-    pos = 1
+    arg_pos = 1
 
     while (i <= length(cmdline)) {
         token = cmdline[i]
@@ -114,15 +113,18 @@ usage = function (options) {
             }
             else {
                 check_positional_arg_valid()
-
-                result[[positional[[pos]]$name]] = token
-                pos = pos + 1
+                # TODO: Treat arglist
+                result[[positional[[arg_pos]]$name]] = token
+                arg_pos = arg_pos + 1
             }
         }
         else if (state == VALUE) {
         }
         else if (state == TRAILING) {
             check_positional_arg_valid()
+            # TODO: Treat arglist
+            result[[positional[[arg_pos]]$name]] = token
+            arg_pos = arg_pos + 1
         }
     }
 
