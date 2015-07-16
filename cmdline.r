@@ -20,13 +20,13 @@ parse = function (...) {
     result = try(.parse(cmdline, options, opts_long, opts_short, positional),
                  silent = TRUE)
     if (inherits(result, 'try-error')) {
-        usage(options)
-        .sys$exit(1, result)
+        message = attr(result, 'condition')$message
+        .sys$exit(1, paste(message, usage(options), sep = '\n\n'))
     }
-    else if (result == 'help') {
-        usage(options)
-        .sys$exit(0)
-    }
+    else if (identical(result, 'help'))
+        .sys$exit(0, usage(options))
+    else
+        result
 }
 
 .parse = function (cmdline, opts_long, opts_short, positional) {
