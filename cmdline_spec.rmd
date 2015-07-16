@@ -128,9 +128,17 @@ test = function (cmdline, spec, expected) {
 Display the help and exit.
 
 ```{r}
-test('', NULL)
-test('-h', NULL)
-test('--help', NULL)
+test('-h', list(arg('x', '')))
+test('--help', list(arg('x', '')))
+```
+
+Wrong arguments:
+
+```{r}
+test(character(0), list(arg('bar', '')))
+test('--foo', list(arg('bar', '')))
+test('foo', list(opt('b', 'bar', '')))
+test('foo', list(opt('b', 'bar', ''), arg('foo', '')))
 ```
 
 Collection of short arguments.
@@ -142,7 +150,7 @@ test('-v',
 test('-O2',
      list(opt('O', '', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
-test('-u username',
+test(c('-u', 'username'),
      list(opt('u', 'user', 'the username')),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
@@ -161,13 +169,13 @@ Equivalently, long options.
 test('--verbose',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
-test('--optim 2',
+test(c('--optim', '2'),
      list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
 test('--optim=2',
      list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
-test('--verbose --silent', list(opt('v', 'verbose', 'verbose logging', FALSE),
-                                opt('s', 'silent', 'silent output', FALSE)),
+test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
+                                      opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
 ```
