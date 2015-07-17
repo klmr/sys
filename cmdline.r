@@ -17,8 +17,8 @@ parse = function (...) {
     args = Filter(function (x) inherits(x, 'sys$cmdline$arg'), args_definition)
     positional = setNames(args, lapply(args, `[[`, 'name'))
 
-    result = try(.parse(cmdline, options, opts_long, opts_short, positional),
-                 silent = TRUE)
+    result = try(.parse(cmdline, args_definition, opts_long, opts_short,
+                        positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
         message = attr(result, 'condition')$message
         .sys$exit(1, paste(message, usage(options), sep = '\n\n'))
@@ -51,7 +51,7 @@ usage = function (options) {
             initial = sprintf('% 10s: ', option$name))
 }
 
-.parse = function (cmdline, options, opts_long, opts_short, positional) {
+.parse = function (cmdline, args, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
             trunc = if (nchar(token) > 20)
@@ -162,19 +162,17 @@ usage = function (options) {
         }
     }
 
-    # TODO: The following incorrectly ignores positional arguments
-
     # Set optional arguments, if not given.
 
-    optional = Filter(function (x) x$optional, options)
+    optional = Filter(function (x) x$optional, args)
     optional_names = unlist(lapply(optional, `[[`, 'name'))
     unset = is.na(match(optional_names, names(result)))
     result[optional_names[unset]] = lapply(optional[unset], `[[`, 'default')
 
-    # Ensure that all options are set.
+    # Ensure that all arguments are set.
 
-    mandatory = Filter(function (x) ! x$optional, options)
-    mandatory_names = unlist(Map(function (x) x$name, options))
+    mandatory = Filter(function (x) ! x$optional, args)
+    mandatory_names = unlist(Map(function (x) x$name, args))
     unset = is.na(match(mandatory_names, names(result)))
 
     if (any(unset)) {
