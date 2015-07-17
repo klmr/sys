@@ -38,6 +38,36 @@ usage = function (options) {
     sprintf('Usage: %s\n\n%s', cmd_usage, arg_usage)
 }
 
+opt = function (short, long, description, default, validate, transform) {
+    stopifnot(is.character(short) && length(short) == 1)
+    stopifnot(is.character(long) && length(long) == 1)
+    stopifnot(is.character(description) && length(description) == 1)
+    stopifnot(missing(default) || length(default) <= 1)
+
+    optional = ! missing(default)
+    if (optional && ! is.null(names(default))) {
+        name = names(default)
+        names(default) = NULL
+    }
+    else {
+        stopifnot(long != '')
+        name = long
+    }
+
+    .expect_unary_function(validate)
+    .expect_unary_function(transform)
+    structure(as.list(environment()), class = 'sys$cmdline$opt')
+}
+
+arg = function (name, description, default, validate, transform) {
+    force(name)
+    force(description)
+    optional = ! missing(default)
+    .expect_unary_function(validate)
+    .expect_unary_function(transform)
+    structure(as.list(environment()), class = 'sys$cmdline$arg')
+}
+
 .make_opt = function (prefix, name)
     if (name == '') NULL else paste0(prefix, name)
 
@@ -247,36 +277,6 @@ usage = function (options) {
     }
 
     result
-}
-
-opt = function (short, long, description, default, validate, transform) {
-    stopifnot(is.character(short) && length(short) == 1)
-    stopifnot(is.character(long) && length(long) == 1)
-    stopifnot(is.character(description) && length(description) == 1)
-    stopifnot(missing(default) || length(default) <= 1)
-
-    optional = ! missing(default)
-    if (optional && ! is.null(names(default))) {
-        name = names(default)
-        names(default) = NULL
-    }
-    else {
-        stopifnot(long != '')
-        name = long
-    }
-
-    .expect_unary_function(validate)
-    .expect_unary_function(transform)
-    structure(as.list(environment()), class = 'sys$cmdline$opt')
-}
-
-arg = function (name, description, default, validate, transform) {
-    force(name)
-    force(description)
-    optional = ! missing(default)
-    .expect_unary_function(validate)
-    .expect_unary_function(transform)
-    structure(as.list(environment()), class = 'sys$cmdline$arg')
 }
 
 .expect_unary_function = function (f) {
