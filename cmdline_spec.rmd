@@ -69,13 +69,13 @@ be more general and may be a superior option (implementation is hard though).
 Command line arguments are specified via `opt`:
 
 ```{r eval=FALSE}
-opt = function (short, long, description, default, validation)
+opt = function (short, long, description, default, validate, transform)
 ```
 
 Positional argument are specified via `arg`:
 
 ```{r eval=FALSE}
-arg = function (name, description, default)
+arg = function (name, description, default, validate, transform)
 ```
 
 Used to construct command line specification as follows:
@@ -151,7 +151,7 @@ test('some.file', list(opt('x', 'extra', 'an extra argument')))
 test('some.file', list(opt('x', 'extra', 'an extra argument'),
                        arg('filename', 'the input file')))
 test('-v3', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
-                     validation = function (value) value %in% c('', 'v', 'vv'))))
+                     validate = function (value) value %in% c('', 'v', 'vv'))))
 ```
 
 ### Collection of short arguments
@@ -168,8 +168,8 @@ test(c('-u', 'username'),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
 test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
-                      validation = function (value) value %in% c('', 'v', 'vv'),
-                      action = function (value) nchar(value) + 1)),
+                      validate = function (value) value %in% c('', 'v', 'vv'),
+                      transform = function (value) nchar(value) + 1)),
      list(verbose = 3))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
@@ -197,9 +197,9 @@ test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FAL
 ### Default arguments
 
 ```{r}
-test('-O2',
+test('-vO2',
      list(opt('v', 'verbose', 'verbose logging', FALSE),
           opt('O', 'optim', 'optimization level', 1),
           arg('tmpdir', 'the path of the temp dir', '~/tmp')),
-     list(verbose = FALSE, optim = 2, tmpdir = '~/tmp'))
+     list(verbose = TRUE, optim = 2, tmpdir = '~/tmp'))
 ```

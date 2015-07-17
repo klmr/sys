@@ -61,6 +61,36 @@ usage = function (options) {
             stop(sprintf('Unexpected positional argument %s', sQuote(trunc)))
         }
 
+    validate = function (option, value) {
+        if (with(option, missing(validate)))
+            TRUE
+        else
+            option$validate(value)
+    }
+
+    transform = function (option, value) {
+        value = .as(value, .opttype(option))
+        if (! with(option, missing(transform)))
+            value = option$transform(value)
+        value
+    }
+
+    store_result = function (option, value) {
+        if (! validate(option, value))
+            stop(sprintf('Value %s invalid for argument %s',
+                         sQuote(value), sQuote(readable_name(option))))
+        result[[option$name]] <<- transform(option, value)
+    }
+
+    readable_name = function (opt) {
+        if (is.null(opt$long))
+            opt$name
+        else if (opt$long != '')
+            paste0('--', opt$long)
+        else
+            paste0('-', opt$short)
+    }
+
     DEFAULT = 0
     VALUE = 1
     TRAILING = 2
@@ -106,7 +136,7 @@ usage = function (options) {
                     }
                     else {
                         value = .reggroup(match, token, 'value')
-                        result[[option$name]] = .as(value, .opttype(option))
+                        store_result(option, value)
                     }
                 }
             }
@@ -137,7 +167,7 @@ usage = function (options) {
                         state = VALUE
                     }
                     else
-                        result[[option$name]] = .as(value, .opttype(option))
+                        store_result(option, value)
 
                     short_opt_pos = 1
                 }
@@ -145,18 +175,18 @@ usage = function (options) {
             else {
                 check_positional_arg_valid()
                 # TODO: Treat arglist
-                result[[positional[[arg_pos]]$name]] = token
+                store_result(positional[[arg_pos]], token)
                 arg_pos = arg_pos + 1
             }
         }
         else if (state == VALUE) {
-            result[[current_option$name]] = .as(token, .opttype(current_option))
+            store_result(current_option, token)
             state = DEFAULT
         }
         else if (state == TRAILING) {
             check_positional_arg_valid()
             # TODO: Treat arglist
-            result[[positional[[arg_pos]]$name]] = token
+            store_result(positional[[arg_pos]], token)
             arg_pos = arg_pos + 1
         }
     }
@@ -176,16 +206,7 @@ usage = function (options) {
 
     if (any(unset)) {
         plural = if(sum(unset) > 1) 's' else ''
-        user_name = function (opt) {
-            if (is.null(opt$long))
-                opt$name
-            else if (opt$long != '')
-                paste0('--', opt$long)
-            else
-                paste0('-', opt$short)
-        }
-
-        unset_options = unlist(lapply(mandatory[unset], user_name))
+        unset_options = unlist(lapply(mandatory[unset], readable_name))
         stop(sprintf('Mandatory argument%s %s not set', plural,
                      paste(sQuote(unset_options), collapse = ', ')))
     }
@@ -193,8 +214,7 @@ usage = function (options) {
     result
 }
 
-opt = function (short, long, description, default, validation) {
-    # TODO: Add argument `action` to transform the value.
+opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
     stopifnot(is.character(description) && length(description) == 1)
@@ -210,20 +230,24 @@ opt = function (short, long, description, default, validation) {
         name = long
     }
 
-    if (missing(validation))
-        validation = function (x) TRUE
-    else
-        stopifnot(inherits(validation, 'function') &&
-                  length(formals(validation)) > 0)
-
+    .expect_unary_function(validate)
+    .expect_unary_function(transform)
     structure(as.list(environment()), class = 'sys$cmdline$opt')
 }
 
-arg = function (name, description, default) {
+arg = function (name, description, default, validate, transform) {
     force(name)
     force(description)
     optional = ! missing(default)
+    .expect_unary_function(validate)
+    .expect_unary_function(transform)
     structure(as.list(environment()), class = 'sys$cmdline$arg')
+}
+
+.expect_unary_function = function (f) {
+    if (! missing(f))
+        stopifnot(inherits(f, 'function') &&
+                  length(formals(f)) > 0)
 }
 
 `print.sys$cmdline$opt` = function (x, ...) {
