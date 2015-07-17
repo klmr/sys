@@ -38,19 +38,39 @@ usage = function (options) {
     sprintf('Usage: %s\n\n%s', cmd_usage, arg_usage)
 }
 
+.make_opt = function (prefix, name)
+    if (name == '') NULL else paste0(prefix, name)
+
 .option_syntax = function (option) {
-    # TODO: Should be “[--long|-s] name” or “[--long|-s]” or “name”
-    # TODO: Optional values in “[…]”
-    option$name
+    if (inherits(option, 'sys$cmdline$opt')) {
+        name = .make_opt('--', option$long)
+        if (is.null(name))
+            name = .make_opt('-', option$short)
+
+        if (! (option$optional && inherits(option$default, 'logical')))
+            name = paste(name, toupper(option$name))
+    }
+    else
+        name = option$name
+
+    if (option$optional)
+        sprintf('[%s]', name)
+    else
+        name
 }
 
 .option_description = function (option) {
-    # TODO: Make this right
-    exdent = 12
+    name = if (inherits(option, 'sys$cmdline$opt'))
+            paste(c(.make_opt('-', option$short),
+                    .make_opt('--', option$long)), collapse = ', ')
+        else
+            option$name
+
+    exdent = 16
     paste(strwrap(option$description,
                   width = .termwidth() - exdent,
                   exdent = exdent,
-                  initial = sprintf('% 10s: ', option$name)),
+                  initial = sprintf('% 14s: ', name)),
           collapse = '\n')
 }
 
@@ -222,7 +242,7 @@ usage = function (options) {
     if (any(unset)) {
         plural = if(sum(unset) > 1) 's' else ''
         unset_options = unlist(lapply(mandatory[unset], readable_name))
-        stop(sprintf('Mandatory argument%s %s not set', plural,
+        stop(sprintf('Mandatory argument%s %s not provided', plural,
                      paste(sQuote(unset_options), collapse = ', ')))
     }
 
