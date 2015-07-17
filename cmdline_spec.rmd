@@ -113,7 +113,7 @@ test = function (cmdline, spec, expected) {
     parsed = do.call(parse, args)
 
     if (is.list(parsed)) {
-        if (! identical(parsed, expected)) {
+        if (! lists_equal(parsed, expected)) {
             if (length(parsed) == 0)
                 parsed = ''
             warning(sprintf('FAILED test %s: %s',
@@ -123,16 +123,22 @@ test = function (cmdline, spec, expected) {
     else if (is.character(parsed))
         message(parsed)
 }
+
+lists_equal = function (a, b) {
+    na = sort(names(a))
+    nb = sort(names(b))
+    identical(na, nb) && identical(a[na], b[nb])
+}
 ```
 
-Display the help and exit.
+### Display the help and exit
 
 ```{r}
 test('-h', list(arg('x', '')))
 test('--help', list(arg('x', '')))
 ```
 
-Wrong arguments:
+### Wrong arguments
 
 ```{r}
 test(character(0), list(arg('bar', '')))
@@ -141,7 +147,7 @@ test('foo', list(opt('b', 'bar', '')))
 test('foo', list(opt('b', 'bar', ''), arg('foo', '')))
 ```
 
-Collection of short arguments.
+### Collection of short arguments
 
 ```{r}
 test('-v',
@@ -163,7 +169,7 @@ test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
      list(verbose = TRUE, silent = TRUE))
 ```
 
-Equivalently, long options.
+### Equivalently, long options
 
 ```{r}
 test('--verbose',
@@ -178,4 +184,14 @@ test('--optim=2',
 test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
                                       opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
+```
+
+### Default arguments
+
+```{r}
+test('-O2',
+     list(opt('v', 'verbose', 'verbose logging', FALSE),
+          opt('O', 'optim', 'optimization level', 1),
+          arg('tmpdir', 'the path of the temp dir', '~/tmp')),
+     list(verbose = FALSE, optim = 2, tmpdir = '~/tmp'))
 ```
