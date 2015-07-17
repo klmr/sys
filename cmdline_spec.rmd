@@ -61,6 +61,9 @@ yields
 list(foo = 'foo', bar = c('bar', 'baz'))
 ```
 
+In fact, implementing an `arity` (similar to Python argparse’s `nargs`) would
+be more general and may be a superior option (implementation is hard though).
+
 ## API
 
 Command line arguments are specified via `opt`:
