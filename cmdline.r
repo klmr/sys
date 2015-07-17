@@ -7,6 +7,8 @@ parse = function (...) {
         cmdline = args_definition[[last]]
         args_definition = args_definition[-last]
     }
+    else
+        cmdline = .sys$args
 
     stopifnot(length(args_definition) > 0)
 
@@ -45,10 +47,11 @@ usage = function (options) {
 .option_description = function (option) {
     # TODO: Make this right
     exdent = 12
-    strwrap(option$description,
-            width = getOption('width') - exdent,
-            exdent = exdent,
-            initial = sprintf('% 10s: ', option$name))
+    paste(strwrap(option$description,
+                  width = getOption('width') - exdent,
+                  exdent = exdent,
+                  initial = sprintf('% 10s: ', option$name)),
+          collapse = '\n')
 }
 
 .parse = function (cmdline, args, opts_long, opts_short, positional) {
