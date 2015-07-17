@@ -20,12 +20,13 @@ sys = modules::import('sys')
 
 sys$run({
     sys$cmdline$describe('A simple mathematical expression evaluator')
-    args = sys$cmdline$parse(opt('v', 'verbose', 'verbose logging', FALSE),
+    args = sys$cmdline$parse(opt('n', 'allow-nan', 'allow NaN results (otherwise, the program exits with a failure)', FALSE),
                              opt('d', 'digits', 'number of digits to print', 0),
                              arg('expression', 'mathematical expression'))
 
-    wrapper = if (verbose) identity else suppressMessages
-    result = wrapper(eval(parse(args$expression)))
+    result = eval(parse(text = args$expression))
+    if (! args$`allow-nan` && is.nan(result))
+        sys$exit(1, 'NaN result invalid')
     message(round(result, args$digits))
 })
 ```
