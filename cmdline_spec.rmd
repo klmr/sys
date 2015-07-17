@@ -150,6 +150,8 @@ test('--extra', list(arg('filename', 'the input file')))
 test('some.file', list(opt('x', 'extra', 'an extra argument')))
 test('some.file', list(opt('x', 'extra', 'an extra argument'),
                        arg('filename', 'the input file')))
+test('-v3', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
+                     validation = function (value) value %in% c('', 'v', 'vv'))))
 ```
 
 ### Collection of short arguments
@@ -166,8 +168,9 @@ test(c('-u', 'username'),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
 test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
-                      function (value) value %in% c('', 'v', 'vv'))),
-     list(verbose = 'vv'))
+                      validation = function (value) value %in% c('', 'v', 'vv'),
+                      action = function (value) nchar(value) + 1)),
+     list(verbose = 3))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
                  opt('s', 'silent', 'silent output', FALSE)),

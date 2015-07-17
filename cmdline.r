@@ -194,6 +194,7 @@ usage = function (options) {
 }
 
 opt = function (short, long, description, default, validation) {
+    # TODO: Add argument `action` to transform the value.
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
     stopifnot(is.character(description) && length(description) == 1)
