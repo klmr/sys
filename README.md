@@ -1,4 +1,4 @@
-# Commandline applications for R
+# Command line applications for R
 
 This is a work in progress for a `sys` module that supports command line
 applications in R. Inspired by Python, it implements a simple, opinionated
