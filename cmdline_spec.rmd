@@ -2,15 +2,19 @@
 
 ## Rationale
 
-In an effort to provide a maximally compatible `argparse` replacement that does
-not rely on Python, this document aims to specify a minimal set of supported
-command line argument options. This should avoid feature creep and remain
-quickly implementable — and optionally extensible. On the other hand, it should
-provide all or most of the standard Unix command line syntax, and offer large
-compatibility with it.
+In an effort to provide a maximally compatible [`argparse`][argparse]
+replacement that does not rely on Python, this document aims to specify a
+minimal set of supported command line argument options. This should avoid
+feature creep and remain quickly implementable — and optionally extensible. On
+the other hand, it should provide all or most of the standard POSIX/[GNU
+command line syntax][], and offer large compatibility with it (except in cases
+where it intentionally diverges).
 
 The API is intentionally not identical to `argparse`’s (pythonic) API. Instead,
 an effort is made to provide an opinionated API familiar to R users.
+
+[argparse]: https://cran.r-project.org/web/packages/argparse/index.html
+[GNU command line syntax]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
 ## Supported command line syntax
 
@@ -53,76 +57,25 @@ Given `list(arg('foo', ''), arg_list('bar', ''))`, the command line
 
 yields
 
-    list(foo = 'foo', bar = c('bar', 'baz'))
+```{r eval=FALSE}
+list(foo = 'foo', bar = c('bar', 'baz'))
+```
+
+In fact, implementing an `arity` (similar to Python argparse’s `nargs`) would
+be more general and may be a superior option (implementation is hard though).
 
 ## API
 
 Command line arguments are specified via `opt`:
 
-```{r}
-opt = function (short, long, description, default, validation) {
-    stopifnot(is.character(short) && length(short) == 1)
-    stopifnot(is.character(long) && length(long) == 1)
-    stopifnot(is.character(description) && length(description) == 1)
-    stopifnot(missing(default) || length(default) <= 1)
-
-    optional = ! missing(default)
-    if (optional && ! is.null(names(default))) {
-        variable_name = names(default)
-        names(default) = NULL
-    }
-    else {
-        stopifnot(long != '')
-        variable_name = long
-    }
-
-    if (missing(validation))
-        validation = function (x) TRUE
-    else
-        stopifnot(inherits(validation, 'function') &&
-                  length(formals(validation)) > 0)
-
-    structure(as.list(environment()), class = 'sys$cmdline$opt')
-}
+```{r eval=FALSE}
+opt = function (short, long, description, default, validate, transform)
 ```
 
-Positional argument specified via `arg`:
+Positional argument are specified via `arg`:
 
-```{r}
-arg = function (name, description, default) {
-    force(name)
-    force(description)
-    optional = ! missing(default)
-    structure(as.list(environment()), class = 'sys$cmdline$arg')
-}
-```
-
-```{r echo=FALSE}
-`print.sys$cmdline$opt` = function (x, ...) {
-    if (x$optional)
-        cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
-                    x$variable_name,
-                    x$short,
-                    x$long,
-                    deparse(x$default),
-                    x$description))
-    else
-        cat(sprintf("%s: -%s|--%s %s\n",
-                    x$variable_name,
-                    x$short,
-                    x$long,
-                    x$description))
-    invisible(x)
-}
-
-`print.sys$cmdline$arg` = function (x, ...) {
-    if (x$optional)
-        cat(sprintf("[%s] (default: %s) %s\n",
-                    x$name, deparse(x$default), x$description))
-    else
-        cat(sprintf("%s: %s\n", x$name, x$description))
-    invisible(x)
-}
+```{r eval=FALSE}
+arg = function (name, description, default, validate, transform)
 ```
 
 Used to construct command line specification as follows:
@@ -146,23 +99,62 @@ concerning the escaping of special characters).
 ## Test cases
 
 ```{r echo=FALSE, show='hide'}
+modules::import('./cmdline', attach = TRUE)
+
+# Make testable
+
+test_env = environment(parse)
+unlockBinding('.sys', test_env)
+test_env$.sys = list(script_name = 'test',
+                     exit = function (code, msg) msg)
+
 # TODO: Implement
-test = function (cmdline, spec, ...) {
-    #parsed = parse_cmd(cmdline, spec)
-    #testthat::expect_equals(parsed, list(...))
-    spec
+test = function (cmdline, spec, expected) {
+    if (missing(expected))
+        expected = 'help'
+    args = spec
+    args[[length(args) + 1]] = cmdline
+    parsed = do.call(parse, args)
+
+    if (is.list(parsed)) {
+        if (! lists_equal(parsed, expected)) {
+            if (length(parsed) == 0)
+                parsed = ''
+            warning(sprintf('FAILED test %s: %s',
+                            paste(cmdline, collapse = ' '), deparse(parsed)))
+        }
+    }
+    else if (is.character(parsed))
+        message(parsed)
+}
+
+lists_equal = function (a, b) {
+    na = sort(names(a))
+    nb = sort(names(b))
+    identical(na, nb) && identical(a[na], b[nb])
 }
 ```
 
-Display the help and exit.
+### Display the help and exit
 
 ```{r}
-test('', NULL)
-test('-h', NULL)
-test('--help', NULL)
+test('-h', list(arg('filename', 'the input file')))
+test('--help', list(opt('x', 'extra', 'an extra argument', FALSE)))
 ```
 
-Collection of short arguments.
+### Wrong arguments
+
+```{r}
+test(character(0), list(arg('filename', 'the input file')))
+test('--extra', list(arg('filename', 'the input file')))
+test('some.file', list(opt('x', 'extra', 'an extra argument')))
+test('some.file', list(opt('x', 'extra', 'an extra argument'),
+                       arg('filename', 'the input file')))
+test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+                      validate = function (value) value %in% c('', 'v'))))
+```
+
+### Collection of short arguments
 
 ```{r}
 test('-v',
@@ -171,32 +163,43 @@ test('-v',
 test('-O2',
      list(opt('O', '', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
-test('-u username',
+test(c('-u', 'username'),
      list(opt('u', 'user', 'the username')),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
-test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbose = ''),
-                      function (value) value %in% c('', 'v', 'vv'))),
-     list(verbose = 'vv'))
+test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+                      validate = function (value) value %in% c('', 'v', 'vv'),
+                      transform = function (value) nchar(value) + 1)),
+     list(verbosity = 3))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
                  opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
 ```
 
-Equivalently, long options.
+### Equivalently, long options
 
 ```{r}
 test('--verbose',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
-test('--optim 2',
+test(c('--optim', '2'),
      list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
 test('--optim=2',
      list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
      list(optimization = 2))
-test('--verbose --silent', list(opt('v', 'verbose', 'verbose logging', FALSE),
-                                opt('s', 'silent', 'silent output', FALSE)),
+test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
+                                      opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
+```
+
+### Default arguments
+
+```{r}
+test('-vO2',
+     list(opt('v', 'verbose', 'verbose logging', FALSE),
+          opt('O', 'optim', 'optimization level', 1),
+          arg('tmpdir', 'the path of the temp dir', '~/tmp')),
+     list(verbose = TRUE, optim = 2, tmpdir = '~/tmp'))
 ```

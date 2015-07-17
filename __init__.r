@@ -84,3 +84,5 @@ run = function (entry_point = main) {
         exit(eval(substitute(main(), list(main = entry_point)), envir = caller))
     }
 }
+
+cmdline = modules::import('./cmdline')
