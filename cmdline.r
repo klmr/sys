@@ -58,8 +58,7 @@ usage = function (options) {
                 paste0(substr(token, 19), '…')
             else
                 token
-            stop(sprintf('Unexpected positional argument %s.',
-                         sQuote(trunc)))
+            stop(sprintf('Unexpected positional argument %s', sQuote(trunc)))
         }
 
     DEFAULT = 0
@@ -95,7 +94,7 @@ usage = function (options) {
 
                 if (is.logical(option$default)) {
                     if (attr(match, 'capture.length')[, 'eq'] != 0)
-                        stop(sprintf('Invalid value: option %s is a toggle.',
+                        stop(sprintf('Invalid value: option %s is a toggle',
                                      sQuote(paste0('--', name))))
 
                     result[[option$name]] = ! option$default
@@ -187,7 +186,7 @@ usage = function (options) {
         }
 
         unset_options = unlist(lapply(mandatory[unset], user_name))
-        stop(sprintf('Mandatory option%s %s not set.', plural,
+        stop(sprintf('Mandatory argument%s %s not set', plural,
                      paste(sQuote(unset_options), collapse = ', ')))
     }
 
