@@ -69,7 +69,8 @@ usage = function (options) {
     }
 
     transform = function (option, value) {
-        value = .as(value, .opttype(option))
+        if (option$optional)
+            value = methods::as(value, typeof(option$default))
         if (! with(option, missing(transform)))
             value = option$transform(value)
         value
@@ -283,14 +284,4 @@ modules::register_S3_method('print', 'sys$cmdline$arg', `print.sys$cmdline$arg`)
     stop = attr(match, 'capture.length')[, group] + start - 1
 
     substr(string, start, stop)
-}
-
-.as = methods::as
-
-.opttype = function (option) {
-    # TODO: Allow specifying type explicitly
-    if (! option$optional)
-        'character'
-    else
-        typeof(option$default)
 }
