@@ -48,10 +48,21 @@ usage = function (options) {
     # TODO: Make this right
     exdent = 12
     paste(strwrap(option$description,
-                  width = getOption('width') - exdent,
+                  width = .termwidth() - exdent,
                   exdent = exdent,
                   initial = sprintf('% 10s: ', option$name)),
           collapse = '\n')
+}
+
+.termwidth = function () {
+    stty_size = suppressWarnings(try(system('stty size', intern = TRUE,
+                                            ignore.stderr = TRUE),
+                                     silent = TRUE))
+    if (! inherits(stty_size, 'try-error'))
+        if (is.null(attr(stty_size, 'status')))
+            return(as.integer(strsplit(stty_size, ' ')[[1]][2]))
+
+    as.integer(Sys.getenv('COLUMNS', getOption('width', 78)))
 }
 
 .parse = function (cmdline, args, opts_long, opts_short, positional) {
