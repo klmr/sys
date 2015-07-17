@@ -21,10 +21,10 @@ parse = function (...) {
                         positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
         message = attr(result, 'condition')$message
-        .sys$exit(1, paste(message, usage(options), sep = '\n\n'))
+        .sys$exit(1, paste(message, usage(args_definition), sep = '\n\n'))
     }
     else if (identical(result, 'help'))
-        .sys$exit(0, usage(options))
+        .sys$exit(0, usage(args_definition))
     else
         result
 }
@@ -32,7 +32,7 @@ parse = function (...) {
 usage = function (options) {
     cmd_usage = paste(.sys$script_name,
                       paste(sapply(options, .option_syntax), collapse = ' '))
-    arg_usage = paste(sapply(options, .option_description), collapse = ' ')
+    arg_usage = paste(sapply(options, .option_description), collapse = '\n')
     sprintf('Usage: %s\n\n%s', cmd_usage, arg_usage)
 }
 
