@@ -38,3 +38,8 @@ Saving the code as `calc.r`, making it executable and running it, via
 yields the output `3.33`. Running it without arguments, with invalid arguments
 or via `./calc.r --help` displays a formatted help message, listing the
 available options, their description and default values.
+
+## Status
+
+This module already largely works but the API (in particular that of the command
+line parser) are still subject to change. Use at your own risk.
