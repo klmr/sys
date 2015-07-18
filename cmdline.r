@@ -13,10 +13,9 @@ parse = function (...) {
 
     stopifnot(length(args_definition) > 0)
 
-    options = Filter(function (x) inherits(x, 'sys$cmdline$opt'),
-                     args_definition)
-    opts_long = setNames(options, lapply(options, `[[`, 'long'))
-    opts_short = setNames(options, lapply(options, `[[`, 'short'))
+    opts = Filter(function (x) inherits(x, 'sys$cmdline$opt'), args_definition)
+    opts_long = setNames(opts, lapply(opts, `[[`, 'long'))
+    opts_short = setNames(opts, lapply(opts, `[[`, 'short'))
     args = Filter(function (x) inherits(x, 'sys$cmdline$arg'), args_definition)
     positional = setNames(args, lapply(args, `[[`, 'name'))
 
