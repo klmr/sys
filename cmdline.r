@@ -1,5 +1,41 @@
 .sys = modules::import('../sys')
 
+#' Parse the command line arguments
+#'
+#' Parses the command line arguments provided to the application in accordance
+#' with a given command line specification. If the command line arguments do not
+#' conform with the specification, quit and print an error message.
+#'
+#' @param ... command line specification (see \link{Details})
+#' @return A named list of options and their associated value. Missing command
+#' line options are filled by their default value, if provided in the
+#' definition. If there was an error parsing the command line arguments, this
+#' function does not return and signals an error instead.
+#'
+#' @details
+#' The arguments consist of one or more command line definition items. Each item
+#' is created by a call to the functions \code{\link{opt}} and
+#' \code{\link{arg}}. These do \emph{not} need to be qualified with their full
+#' module name (see \link{Examples}).
+#'
+#' Optionally, the last argument can be a character vector specifying the
+#' command line arguments. If this is not given, then \code{sys$args} is used
+#' instead. In normal usage, this argument is omitted.
+#'
+#' @examples
+#' sys = import('sys')
+#' \dontrun{
+#' args = sys$cmdline$parse(sys$cmdline$arg('file', 'the input file'))
+#'
+#' # Or, equivalently, without qualifying `opt` and `arg`:
+#' args = sys$cmdline$parse(arg('file', 'the input file'))
+#' }
+#' # Explicitly provide arguments:
+#' sys$cmdline$parse(arg('file', 'the input file'), 'foo.txt')
+#'
+#' sys$cmdline$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
+#'                   arg('file', 'the input file'),
+#'                   c('-v', 'foo.txt'))
 parse = function (...) {
     args_definition = lapply(.substitute_args(match.call()[-1],
                                               list(opt = opt, arg = arg)), eval)
