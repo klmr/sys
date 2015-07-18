@@ -22,7 +22,7 @@ parse = function (...) {
     result = try(.parse(cmdline, args_definition, opts_long, opts_short,
                         positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
-        message = attr(result, 'condition')$message
+        message = conditionMessage(attr(result, 'condition'))
         .sys$exit(1, paste(message, usage(args_definition), sep = '\n\n'))
     }
     else if (identical(result, 'help'))
