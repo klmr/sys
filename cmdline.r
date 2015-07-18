@@ -36,6 +36,7 @@
 #' sys$cmdline$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
 #'                   arg('file', 'the input file'),
 #'                   c('-v', 'foo.txt'))
+# TODO: Specify arguments separately as `(..., cmdline [= .sys$args])`
 parse = function (...) {
     args_definition = lapply(.substitute_args(match.call()[-1],
                                               list(opt = opt, arg = arg)), eval)
@@ -59,21 +60,26 @@ parse = function (...) {
                         positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
         message = conditionMessage(attr(result, 'condition'))
-        .sys$exit(1, paste(message, usage(args_definition), sep = '\n\n'))
+        stop(.sys_error(message, args_definition))
     }
     else if (identical(result, 'help'))
-        .sys$exit(0, usage(args_definition))
+        stop(.sys_help(args_definition))
     else
         result
 }
 
-usage = function (options) {
-    cmd_usage = paste(.sys$script_name,
-                      paste(sapply(options, .option_syntax), collapse = ' '))
-    arg_usage = paste(sapply(options, .option_description), collapse = '\n')
-    sprintf('Usage: %s\n\n%s', cmd_usage, arg_usage)
+help = function (options) {
+    arg_help = paste(sapply(options, .option_description), collapse = '\n')
+    paste0(usage(options), '\n\nArguments:\n', arg_help)
 }
 
+usage = function (options) {
+    cmd = paste(.sys$script_name,
+                paste(sapply(options, .option_syntax), collapse = ' '))
+    paste('Usage:', cmd)
+}
+
+# TODO: Document
 opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
@@ -95,6 +101,7 @@ opt = function (short, long, description, default, validate, transform) {
     structure(as.list(environment()), class = 'sys$cmdline$opt')
 }
 
+# TODO: Document
 arg = function (name, description, default, validate, transform) {
     force(name)
     force(description)
@@ -163,6 +170,16 @@ arg = function (name, description, default, validate, transform) {
             return(as.integer(strsplit(stty_size, ' ')[[1]][2]))
 
     as.integer(Sys.getenv('COLUMNS', getOption('width', 78)))
+}
+
+.sys_error = function (message, options) {
+    structure(list(message = message, call = call('parse', options)),
+              class = c('sys$cmdline$error', 'sys$cmdline$help', 'error', 'condition'))
+}
+
+.sys_help = function (options) {
+    structure(list(call = call('parse', options)),
+              class = c('sys$cmdline$help', 'error', 'condition'))
 }
 
 .parse = function (cmdline, args, opts_long, opts_short, positional) {
@@ -362,6 +379,27 @@ modules::register_S3_method('print', 'sys$cmdline$opt', `print.sys$cmdline$opt`)
     invisible(x)
 }
 modules::register_S3_method('print', 'sys$cmdline$arg', `print.sys$cmdline$arg`)
+
+`print.sys$cmdline$error` = function (x, ...) {
+    call = conditionCall(x)
+    options = lapply(call[-1][[1]], eval)
+    message = paste('Error:', conditionMessage(x))
+    args = list(...)
+    file = if (! is.null(args$file)) args$file else ''
+    cat(paste(usage(options), message, sep = '\n'), '\n', file = file)
+    invisible(x)
+}
+modules::register_S3_method('print', 'sys$cmdline$error', `print.sys$cmdline$error`)
+
+`print.sys$cmdline$help` = function (x, ...) {
+    call = conditionCall(x)
+    options = lapply(call[-1][[1]], eval)
+    args = list(...)
+    file = if (! is.null(args$file)) args$file else ''
+    cat(help(options), '\n', file = file)
+    invisible(x)
+}
+modules::register_S3_method('print', 'sys$cmdline$help', `print.sys$cmdline$help`)
 
 .reggroup = function (match, string, group) {
     start = attr(match, 'capture.start')[, group]
