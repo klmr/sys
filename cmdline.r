@@ -1,7 +1,8 @@
 .sys = modules::import('../sys')
 
 parse = function (...) {
-    args_definition = list(...)
+    args_definition = lapply(.substitute_args(match.call()[-1],
+                                              list(opt = opt, arg = arg)), eval)
     last = length(args_definition)
     if (is.character(args_definition[[last]])) {
         cmdline = args_definition[[last]]
@@ -66,6 +67,20 @@ arg = function (name, description, default, validate, transform) {
     .expect_unary_function(validate)
     .expect_unary_function(transform)
     structure(as.list(environment()), class = 'sys$cmdline$arg')
+}
+
+.substitute_args = function (expr, env) {
+    replace_names = function (expr) {
+        if (is.name(expr[[1]])) {
+            name = as.character(expr[[1]])
+            if (name %in% names(env))
+                expr[[1]] = env[[name]]
+        }
+
+        expr
+    }
+
+    as.call(lapply(expr, replace_names))
 }
 
 .make_opt = function (prefix, name)
