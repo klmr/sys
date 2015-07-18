@@ -47,6 +47,22 @@ exit = function (code = 0, msg) {
     quit(save = 'no', status = if (is.null(code)) 0 else code)
 }
 
+#' Print a message
+#'
+#' \code{print} outputs a message consisting of several fragments.
+#' @param ... parts of the message
+#' @param file a connection or character string specifying a file name or a pipe
+#'  (see \code{\link{cat}} for details)
+#' @param nl logical; if \code{TRUE}, append a newline character
+print = function (..., file = stdout(), nl = TRUE)
+    cat(..., if(nl) '\n', file = file, sep = '')
+
+#' \code{printf} outputs a formatted message.
+#' @param format a format string that is passed to \code{\link{sprintf}}
+#' @rdname print
+printf = function (format, ..., file = stdout(), nl = TRUE)
+    print(sprintf(format, ...), file = file, nl = nl)
+
 #' Execute the \code{entry_point} function defined by the caller
 #'
 #' Execute an entry point function, but only if the calling code is executed as
