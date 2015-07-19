@@ -105,18 +105,18 @@ modules::import('./cmdline', attach = TRUE)
 
 test_env = environment(parse)
 unlockBinding('.sys', test_env)
-test_env$.sys = list(script_name = 'test',
-                     exit = function (code, msg) msg)
+test_env$.sys = list(script_name = 'test')
 
-# TODO: Implement
 test = function (cmdline, spec, expected) {
     if (missing(expected))
         expected = 'help'
     args = spec
     args[[length(args) + 1]] = cmdline
-    parsed = do.call(parse, args)
+    parsed = tryCatch(do.call(parse, args), error = identity)
 
-    if (is.list(parsed)) {
+    if (inherits(parsed, 'error'))
+        print(parsed)
+    else {
         if (! lists_equal(parsed, expected)) {
             if (length(parsed) == 0)
                 parsed = ''
@@ -124,8 +124,6 @@ test = function (cmdline, spec, expected) {
                             paste(cmdline, collapse = ' '), deparse(parsed)))
         }
     }
-    else if (is.character(parsed))
-        message(parsed)
 }
 
 lists_equal = function (a, b) {
