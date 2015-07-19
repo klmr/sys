@@ -6,7 +6,7 @@
 #' with a given command line specification. If the command line arguments do not
 #' conform with the specification, quit and print an error message.
 #'
-#' @param ... command line specification (see \link{Details})
+#' @param ... command line specification (see \code{Details})
 #' @return A named list of options and their associated value. Missing command
 #' line options are filled by their default value, if provided in the
 #' definition. If there was an error parsing the command line arguments, this
@@ -16,7 +16,7 @@
 #' The arguments consist of one or more command line definition items. Each item
 #' is created by a call to the functions \code{\link{opt}} and
 #' \code{\link{arg}}. These do \emph{not} need to be qualified with their full
-#' module name (see \link{Examples}).
+#' module name (see \code{Examples}).
 #'
 #' Optionally, the last argument can be a character vector specifying the
 #' command line arguments. If this is not given, then \code{sys$args} is used
@@ -36,6 +36,7 @@
 #' sys$cmdline$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
 #'                   arg('file', 'the input file'),
 #'                   c('-v', 'foo.txt'))
+#' @seealso \code{opt}, \code{arg}
 # TODO: Specify arguments separately as `(..., cmdline [= .sys$args])`
 parse = function (...) {
     args_definition = lapply(.substitute_args(match.call()[-1],
@@ -68,18 +69,67 @@ parse = function (...) {
         result
 }
 
+#' The help message for a command line application
+#'
+#' \code{help} returns a formatted usage and help message created from a list
+#' of options.
+#' @param options list of options
+#' @return Character vector containing the help message.
+# TODO: Add missing default values to description
 help = function (options) {
     arg_help = paste(sapply(options, .option_description), collapse = '\n')
     paste0(usage(options), '\n\nArguments:\n', arg_help)
 }
 
+#' \code{usage} returns a formatted usage message created from a list of
+#' options.
+#' @rdname help
 usage = function (options) {
     cmd = paste(.sys$script_name,
                 paste(sapply(options, .option_syntax), collapse = ' '))
     paste('Usage:', cmd)
 }
 
-# TODO: Document
+#' Create a command line argument
+#'
+#' \code{opt} creates an option-style command line argument (used via
+#' \code{--long_name} or \code{-s}).
+#' @param short the option’s short name
+#' @param long the option’s long name
+#' @param description a user-readable description text
+#' @param default the default value, for optional arguments (optional)
+#' @param validate a validation function for the argument value (optional)
+#' @param transform a transformation function for the argument value (optional)
+#' @return \code{opt} returns an option-style command line argument.
+#'
+#' @details
+#' An option-style command line argument can have either a short name or a long
+#' name, or both. The user specifies this option by either writing the short
+#' name, prefixed by \code{'-'} or the long name, prefixed by \code{'--'}. This
+#' can be followed by an associated value. Optional options whose default value
+#' is logical (\code{TRUE} or \code{FALSE}) are \emph{toggles}, and cannot be
+#' followed by values. Rather, their presence in the command line toggles the
+#' default value (by negating it); see \code{Examples}.
+#'
+#' If provided, \code{validate} must be a function taking a single character
+#' argument and returning a single logical. Upon parsing the option’s value, the
+#' \code{validate} function is called with the user-provided value to validate
+#' it.
+#'
+#' If provided, \code{transform} must be a function taking a single character
+#' argument. It will be called with the value provided by the user for this
+#' argument (or the default value, if no user argument was provided!).
+#'
+#' For \code{opt}, the internal variable name to access the parsed option’s
+#' value is the option’s long name, if provided. If no long name is provided
+#' (because it exists as a short option only), the short option name is used
+#' instead. It is the user’s responsibility to ensure that this does not
+#' conflict with another option’s “long” name.
+#'
+#' @examples
+#' # Create a toggle to enable verbose logging, and disable it by default.
+#' opt('v', 'verbose', 'enable verbose logging', FALSE)
+#' @rdname arguments
 opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
@@ -95,7 +145,39 @@ opt = function (short, long, description, default, validate, transform) {
     structure(as.list(environment()), class = 'sys$cmdline$opt')
 }
 
-# TODO: Document
+#' \code{arg} creates a positional command line argument (such as a file name).
+#' @param name the positional argument’s name
+#' @return \code{arg} returns  positional command line argument.
+#'
+#' @details
+#' Positional arguments are provided by the user in the order in which they are
+#' passed to \code{\link{parse}}. That is, if the programmer provided three
+#' positional arguments, then these are filled with the first three command line
+#' arguments that are not options (start with \code{'-'} or \code{'--'}).
+#'
+#' For \code{arg}, the internal variable name to access the parsed argument’s
+#' value is the argument’s name.
+#'
+#' @note Positional arguments can be optional but if an optional argument is
+#' followed by a non-optional argument, the optional argument is nevertheless
+#' filled first. It therefore does not make sense to declare non-optional
+#' arguments after optional ones.
+#'
+#' In order to specify positional arguments that start with one or more dashes,
+#' the user can specify the special option \code{--}: after this option, every
+#' remaining argument is considered to be a positional argument, even if it
+#' matches the name of an option.
+#'
+#' @examples
+#' # Create arguments to specify the input and output filename.
+#'
+#' arg('input_file', 'the input filename')
+#' arg('output_file', 'the output filename', default = '')
+#'
+#' # Alternatively, we can use proper types:
+#' arg('output_file', 'the output filename', default = '<STDOUT>',
+#'     transform = function (x) if (x == '<STDOUT>') stdout() else file(x, 'w'))
+#' @rdname arguments
 arg = function (name, description, default, validate, transform) {
     force(name)
     force(description)
@@ -324,6 +406,7 @@ arg = function (name, description, default, validate, transform) {
     optional = Filter(function (x) x$optional, args)
     optional_names = unlist(lapply(optional, `[[`, 'name'))
     unset = is.na(match(optional_names, names(result)))
+    # TODO Transform default value!
     result[optional_names[unset]] = lapply(optional[unset], `[[`, 'default')
 
     # Ensure that all arguments are set.
