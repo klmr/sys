@@ -98,7 +98,7 @@ concerning the escaping of special characters).
 
 ## Test cases
 
-```{r echo=FALSE, show='hide'}
+```{r echo=FALSE, show='hide', message=FALSE}
 modules::import('./cmdline', attach = TRUE)
 
 # Make testable
