@@ -24,7 +24,7 @@ an effort is made to provide an opinionated API familiar to R users.
 * Short arguments are preceded by `-` and may be grouped into one long string
 * Long arguments are preceded by `--`
 * Values of short arguments are separated by whitespace or directly adjacent
-* Values of long arguments are separated by whitespace, assignment (`=`) or both
+* Values of long arguments are separated by whitespace or assignment (`=`)
 * Positional arguments follow named arguments. The special argument `--`
   (without a following name) specifies that all following arguments are
   positional, even if they start with one or more dashes
