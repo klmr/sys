@@ -83,18 +83,12 @@ usage = function (options) {
 opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
+    stopifnot(short != '' || long != '')
     stopifnot(is.character(description) && length(description) == 1)
     stopifnot(missing(default) || length(default) <= 1)
 
     optional = ! missing(default)
-    if (optional && ! is.null(names(default))) {
-        name = names(default)
-        names(default) = NULL
-    }
-    else {
-        stopifnot(long != '')
-        name = long
-    }
+    name = if (long == '') short else long
 
     .expect_unary_function(validate)
     .expect_unary_function(transform)
