@@ -148,7 +148,7 @@ test('--extra', list(arg('filename', 'the input file')))
 test('some.file', list(opt('x', 'extra', 'an extra argument')))
 test('some.file', list(opt('x', 'extra', 'an extra argument'),
                        arg('filename', 'the input file')))
-test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v'))))
 ```
 
@@ -159,20 +159,20 @@ test('-v',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
 test('-O2',
-     list(opt('O', '', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', '', 'optimization level', 1)),
+     list(O = 2))
 test(c('-u', 'username'),
      list(opt('u', 'user', 'the username')),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
-test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v', 'vv'),
                       transform = nchar)),
-     list(verbosity = 2L))
-test(NULL, list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+     list(v = 2L))
+test(NULL, list(opt('v', '', 'level of verbose logging', '',
                     validate = function (value) value %in% c('', 'v', 'vv'),
                     transform = nchar)),
-     list(verbosity = 0L))
+     list(v = 0L))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
                  opt('s', 'silent', 'silent output', FALSE)),
@@ -186,11 +186,11 @@ test('--verbose',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
 test(c('--optim', '2'),
-     list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', 'optim', 'optimization level', 1)),
+     list(optim = 2))
 test('--optim=2',
-     list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', 'optim', 'optimization level', 1)),
+     list(optim = 2))
 test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
                                       opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
