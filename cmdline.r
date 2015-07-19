@@ -335,7 +335,7 @@ arg = function (name, description, default, validate, transform) {
     # Ensure that all arguments are set.
 
     mandatory = Filter(function (x) ! x$optional, args)
-    mandatory_names = unlist(Map(function (x) x$name, args))
+    mandatory_names = unlist(Map(function (x) x$name, mandatory))
     unset = is.na(match(mandatory_names, names(result)))
 
     if (any(unset)) {
