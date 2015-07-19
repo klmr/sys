@@ -77,7 +77,10 @@ run = function (entry_point = main) {
     caller = parent.frame()
     caller_name = evalq(modules::module_name(), envir = caller)
 
-    error = tryCatch(if (is.null(caller_name)) {
+    if (! is.null(caller_name))
+        return(invisible())
+
+    error = tryCatch({
         if (class(substitute(entry_point)) == '{')
             exit(entry_point)
 
