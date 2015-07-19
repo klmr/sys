@@ -111,6 +111,17 @@ usage = function (options) {
 #' followed by values. Rather, their presence in the command line toggles the
 #' default value (by negating it); see \code{Examples}.
 #'
+#' For non-toggle options, values can be specified in one of the following ways:
+#'
+#' \enumerate{
+#'  \item Following the option name, separated by a space (\code{-f bar},
+#'      \code{--foo bar}),
+#'  \item After a short option name, directly adjacent to the option name,
+#'      without intervening space (\code{-fbar}),
+#'  \item After a long option name, separated by an equals sign (\code{=})
+#'      instead of a space (\code{--foo=bar}).
+#' }
+#'
 #' If provided, \code{validate} must be a function taking a single character
 #' argument and returning a single logical. Upon parsing the option’s value, the
 #' \code{validate} function is called with the user-provided value to validate
