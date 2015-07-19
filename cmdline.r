@@ -40,10 +40,10 @@
 parse = function (...) {
     args_definition = lapply(.substitute_args(match.call()[-1],
                                               list(opt = opt, arg = arg)), eval)
-    last = length(args_definition)
-    if (is.character(args_definition[[last]])) {
-        cmdline = args_definition[[last]]
-        args_definition = args_definition[-last]
+    last = args_definition[[length(args_definition)]]
+    if (is.character(last) || is.null(last)) {
+        cmdline = last
+        args_definition = args_definition[-length(args_definition)]
     }
     else
         cmdline = .sys$args
@@ -113,6 +113,8 @@ arg = function (name, description, default, validate, transform) {
 
 .substitute_args = function (expr, env) {
     replace_names = function (expr) {
+        if (length(expr) == 0)
+            return()
         if (is.name(expr[[1]])) {
             name = as.character(expr[[1]])
             if (name %in% names(env))
