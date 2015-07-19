@@ -167,8 +167,12 @@ test(c('-u', 'username'),
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
 test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
                       validate = function (value) value %in% c('', 'v', 'vv'),
-                      transform = function (value) nchar(value) + 1)),
-     list(verbosity = 3))
+                      transform = nchar)),
+     list(verbosity = 2L))
+test(NULL, list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+                    validate = function (value) value %in% c('', 'v', 'vv'),
+                    transform = nchar)),
+     list(verbosity = 0L))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
                  opt('s', 'silent', 'silent output', FALSE)),
