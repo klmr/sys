@@ -75,7 +75,6 @@ parse = function (...) {
 #' of options.
 #' @param options list of options
 #' @return Character vector containing the help message.
-# TODO: Add missing default values to description
 help = function (options) {
     arg_help = paste(sapply(options, .option_description), collapse = '\n')
     paste0(usage(options), '\n\nArguments:\n', arg_help)
@@ -243,7 +242,11 @@ arg = function (name, description, default, validate, transform) {
             option$name
 
     exdent = 16
-    paste(strwrap(option$description,
+    description = option$description
+    if (option$optional)
+        description = paste(description,
+                            sprintf('(default: %s)', deparse(option$default)))
+    paste(strwrap(description,
                   width = .termwidth() - exdent,
                   exdent = exdent,
                   initial = sprintf('% 14s: ', name)),

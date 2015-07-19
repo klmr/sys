@@ -138,6 +138,9 @@ lists_equal = function (a, b) {
 ```{r}
 test('-h', list(arg('filename', 'the input file')))
 test('--help', list(opt('x', 'extra', 'an extra argument', FALSE)))
+test('-h', list(opt('v', 'verbose', 'enable verbose logging', FALSE),
+                opt('l', 'log', 'log file path', '/tmp'),
+                arg('filename', 'the input file', '<STDIN>')))
 ```
 
 ### Wrong arguments
@@ -147,7 +150,7 @@ test(character(0), list(arg('filename', 'the input file')))
 test('--extra', list(arg('filename', 'the input file')))
 test('some.file', list(opt('x', 'extra', 'an extra argument')))
 test('some.file', list(opt('x', 'extra', 'an extra argument'),
-                       arg('filename', 'the input file')))
+                       arg('filename', 'the input file', '')))
 test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v'))))
 ```
