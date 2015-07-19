@@ -420,8 +420,9 @@ arg = function (name, description, default, validate, transform) {
     optional = Filter(function (x) x$optional, args)
     optional_names = unlist(lapply(optional, `[[`, 'name'))
     unset = is.na(match(optional_names, names(result)))
-    # TODO Transform default value!
-    result[optional_names[unset]] = lapply(optional[unset], `[[`, 'default')
+    optional_defaults = lapply(optional[unset], `[[`, 'default')
+    result[optional_names[unset]] = mapply(transform,
+                                           optional[unset], optional_defaults)
 
     # Ensure that all arguments are set.
 
