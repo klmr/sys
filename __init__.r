@@ -93,12 +93,24 @@ run = function (entry_point = main) {
     caller = parent.frame()
     caller_name = evalq(modules::module_name(), envir = caller)
 
-    if (is.null(caller_name)) {
+    if (! is.null(caller_name))
+        return(invisible())
+
+    error = tryCatch({
         if (class(substitute(entry_point)) == '{')
             exit(entry_point)
 
         exit(eval(substitute(main(), list(main = entry_point)), envir = caller))
+    }, error = identity)
+
+    if (inherits(error, 'sys$cmdline$help')) {
+        is_error = inherits(error, 'sys$cmdline$error')
+        print(error, file = if (is_error) stderr() else stdout())
+        if (is_error)
+            sys$exit(1)
     }
+    else
+        stop(error)
 }
 
 cmdline = modules::import('./cmdline')

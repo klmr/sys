@@ -24,7 +24,7 @@ an effort is made to provide an opinionated API familiar to R users.
 * Short arguments are preceded by `-` and may be grouped into one long string
 * Long arguments are preceded by `--`
 * Values of short arguments are separated by whitespace or directly adjacent
-* Values of long arguments are separated by whitespace, assignment (`=`) or both
+* Values of long arguments are separated by whitespace or assignment (`=`)
 * Positional arguments follow named arguments. The special argument `--`
   (without a following name) specifies that all following arguments are
   positional, even if they start with one or more dashes
@@ -98,25 +98,25 @@ concerning the escaping of special characters).
 
 ## Test cases
 
-```{r echo=FALSE, show='hide'}
+```{r echo=FALSE, show='hide', message=FALSE}
 modules::import('./cmdline', attach = TRUE)
 
 # Make testable
 
 test_env = environment(parse)
 unlockBinding('.sys', test_env)
-test_env$.sys = list(script_name = 'test',
-                     exit = function (code, msg) msg)
+test_env$.sys = list(script_name = 'test')
 
-# TODO: Implement
 test = function (cmdline, spec, expected) {
     if (missing(expected))
         expected = 'help'
     args = spec
-    args[[length(args) + 1]] = cmdline
-    parsed = do.call(parse, args)
+    args$args = cmdline
+    parsed = tryCatch(do.call(parse, args), error = identity)
 
-    if (is.list(parsed)) {
+    if (inherits(parsed, 'error'))
+        print(parsed)
+    else {
         if (! lists_equal(parsed, expected)) {
             if (length(parsed) == 0)
                 parsed = ''
@@ -124,8 +124,6 @@ test = function (cmdline, spec, expected) {
                             paste(cmdline, collapse = ' '), deparse(parsed)))
         }
     }
-    else if (is.character(parsed))
-        message(parsed)
 }
 
 lists_equal = function (a, b) {
@@ -140,6 +138,9 @@ lists_equal = function (a, b) {
 ```{r}
 test('-h', list(arg('filename', 'the input file')))
 test('--help', list(opt('x', 'extra', 'an extra argument', FALSE)))
+test('-h', list(opt('v', 'verbose', 'enable verbose logging', FALSE),
+                opt('l', 'log', 'log file path', '/tmp'),
+                arg('filename', 'the input file', '<STDIN>')))
 ```
 
 ### Wrong arguments
@@ -149,8 +150,8 @@ test(character(0), list(arg('filename', 'the input file')))
 test('--extra', list(arg('filename', 'the input file')))
 test('some.file', list(opt('x', 'extra', 'an extra argument')))
 test('some.file', list(opt('x', 'extra', 'an extra argument'),
-                       arg('filename', 'the input file')))
-test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+                       arg('filename', 'the input file', '')))
+test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v'))))
 ```
 
@@ -161,16 +162,20 @@ test('-v',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
 test('-O2',
-     list(opt('O', '', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', '', 'optimization level', 1)),
+     list(O = 2))
 test(c('-u', 'username'),
      list(opt('u', 'user', 'the username')),
      list(user = 'username'))
 # special case: we only allow “-v”, “-vv”, “-vvv” — needs to be validated separately.
-test('-vvv', list(opt('v', '', 'level of verbose logging', c(verbosity = ''),
+test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v', 'vv'),
-                      transform = function (value) nchar(value) + 1)),
-     list(verbosity = 3))
+                      transform = nchar)),
+     list(v = 2L))
+test(NULL, list(opt('v', '', 'level of verbose logging', '',
+                    validate = function (value) value %in% c('', 'v', 'vv'),
+                    transform = nchar)),
+     list(v = 0L))
 # The following doesn’t make sense but hey.
 test('-vs', list(opt('v', 'verbose', 'verbose logging', FALSE),
                  opt('s', 'silent', 'silent output', FALSE)),
@@ -184,11 +189,11 @@ test('--verbose',
      list(opt('v', 'verbose', 'verbose logging', FALSE)),
      list(verbose = TRUE))
 test(c('--optim', '2'),
-     list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', 'optim', 'optimization level', 1)),
+     list(optim = 2))
 test('--optim=2',
-     list(opt('O', 'optim', 'optimization level', c(optimization = 1))),
-     list(optimization = 2))
+     list(opt('O', 'optim', 'optimization level', 1)),
+     list(optim = 2))
 test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
                                       opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
