@@ -7,10 +7,12 @@
 #' conform with the specification, quit and print an error message.
 #'
 #' @param ... command line specification (see \code{Details})
+#' @param args character vector of command line arguments to parse (optional);
+#'  defaults to \code{sys$args}
 #' @return A named list of options and their associated value. Missing command
 #' line options are filled by their default value, if provided in the
 #' definition. If there was an error parsing the command line arguments, this
-#' function does not return and signals an error instead.
+#' function signals an error via \code{\link{stop}} instead.
 #'
 #' @details
 #' The arguments consist of one or more command line definition items. Each item
@@ -18,24 +20,25 @@
 #' \code{\link{arg}}. These do \emph{not} need to be qualified with their full
 #' module name (see \code{Examples}).
 #'
-#' Optionally, the last argument can be a character vector specifying the
-#' command line arguments. If this is not given, then \code{sys$args} is used
-#' instead. In normal usage, this argument is omitted.
+#' Optionally, \code{args} can be a character vector specifying the command line
+#' arguments. If this is not given, then \code{sys$args} is used instead. In
+#' normal usage, this argument is omitted.
 #'
 #' @examples
 #' sys = import('sys')
 #' \dontrun{
+#' # Use command line provided by `sys$args`
 #' args = sys$cmdline$parse(sys$cmdline$arg('file', 'the input file'))
 #'
 #' # Or, equivalently, without qualifying `opt` and `arg`:
 #' args = sys$cmdline$parse(arg('file', 'the input file'))
 #' }
 #' # Explicitly provide arguments:
-#' sys$cmdline$parse(arg('file', 'the input file'), 'foo.txt')
+#' sys$cmdline$parse(arg('file', 'the input file'), args = 'foo.txt')
 #'
 #' sys$cmdline$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
 #'                   arg('file', 'the input file'),
-#'                   c('-v', 'foo.txt'))
+#'                   args = c('-v', 'foo.txt'))
 #' @seealso \code{opt}, \code{arg}
 parse = function (..., args) {
     if (missing(args))
