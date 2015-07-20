@@ -37,27 +37,23 @@
 #'                   arg('file', 'the input file'),
 #'                   c('-v', 'foo.txt'))
 #' @seealso \code{opt}, \code{arg}
-# TODO: Specify arguments separately as `(..., cmdline [= .sys$args])`
-parse = function (...) {
-    args_definition = lapply(.substitute_args(match.call()[-1],
+parse = function (..., args) {
+    if (missing(args))
+        args = .sys$args
+    args_definition = lapply(.substitute_args(match.call(expand.dots = FALSE)$...,
                                               list(opt = opt, arg = arg)), eval)
-    last = args_definition[[length(args_definition)]]
-    if (is.character(last) || is.null(last)) {
-        cmdline = last
-        args_definition = args_definition[-length(args_definition)]
-    }
-    else
-        cmdline = .sys$args
 
     stopifnot(length(args_definition) > 0)
+    stopifnot(all(sapply(args_definition, inherits, 'sys$cmdline$token')))
 
     opts = Filter(function (x) inherits(x, 'sys$cmdline$opt'), args_definition)
     opts_long = setNames(opts, lapply(opts, `[[`, 'long'))
     opts_short = setNames(opts, lapply(opts, `[[`, 'short'))
-    args = Filter(function (x) inherits(x, 'sys$cmdline$arg'), args_definition)
-    positional = setNames(args, lapply(args, `[[`, 'name'))
+    positional = Filter(function (x) inherits(x, 'sys$cmdline$arg'),
+                        args_definition)
+    positional = setNames(positional, lapply(positional, `[[`, 'name'))
 
-    result = try(.parse(cmdline, args_definition, opts_long, opts_short,
+    result = try(.parse(args, args_definition, opts_long, opts_short,
                         positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
         message = conditionMessage(attr(result, 'condition'))
@@ -152,7 +148,8 @@ opt = function (short, long, description, default, validate, transform) {
 
     .expect_unary_function(validate)
     .expect_unary_function(transform)
-    structure(as.list(environment()), class = 'sys$cmdline$opt')
+    structure(as.list(environment()),
+              class = c('sys$cmdline$opt', 'sys$cmdline$token'))
 }
 
 #' \code{arg} creates a positional command line argument (such as a file name).
@@ -194,13 +191,12 @@ arg = function (name, description, default, validate, transform) {
     optional = ! missing(default)
     .expect_unary_function(validate)
     .expect_unary_function(transform)
-    structure(as.list(environment()), class = 'sys$cmdline$arg')
+    structure(as.list(environment()),
+              class = c('sys$cmdline$arg', 'sys$cmdline$token'))
 }
 
 .substitute_args = function (expr, env) {
     replace_names = function (expr) {
-        if (length(expr) == 0)
-            return()
         if (is.name(expr[[1]])) {
             name = as.character(expr[[1]])
             if (name %in% names(env))
@@ -274,7 +270,7 @@ arg = function (name, description, default, validate, transform) {
               class = c('sys$cmdline$help', 'error', 'condition'))
 }
 
-.parse = function (cmdline, args, opts_long, opts_short, positional) {
+.parse = function (args, options, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
             trunc = if (nchar(token) > 20)
@@ -325,8 +321,8 @@ arg = function (name, description, default, validate, transform) {
     arg_pos = 1
     short_opt_pos = 1
 
-    while (i <= length(cmdline)) {
-        token = cmdline[i]
+    while (i <= length(args)) {
+        token = args[i]
         i = i + 1
         if (state == DEFAULT) {
             if (token == '--')
@@ -417,7 +413,7 @@ arg = function (name, description, default, validate, transform) {
 
     # Set optional arguments, if not given.
 
-    optional = Filter(function (x) x$optional, args)
+    optional = Filter(function (x) x$optional, options)
     optional_names = unlist(lapply(optional, `[[`, 'name'))
     unset = is.na(match(optional_names, names(result)))
     optional_defaults = lapply(optional[unset], `[[`, 'default')
@@ -426,7 +422,7 @@ arg = function (name, description, default, validate, transform) {
 
     # Ensure that all arguments are set.
 
-    mandatory = Filter(function (x) ! x$optional, args)
+    mandatory = Filter(function (x) ! x$optional, options)
     mandatory_names = unlist(Map(function (x) x$name, mandatory))
     unset = is.na(match(mandatory_names, names(result)))
 

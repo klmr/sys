@@ -111,7 +111,7 @@ test = function (cmdline, spec, expected) {
     if (missing(expected))
         expected = 'help'
     args = spec
-    args[[length(args) + 1]] = cmdline
+    args$args = cmdline
     parsed = tryCatch(do.call(parse, args), error = identity)
 
     if (inherits(parsed, 'error'))
