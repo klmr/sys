@@ -105,7 +105,7 @@ run = function (entry_point = main) {
 
     if (inherits(error, 'sys$cmdline$help')) {
         is_error = inherits(error, 'sys$cmdline$error')
-        print(error, file = if (is_error) stderr() else stdout())
+        base::print(error, file = if (is_error) stderr() else stdout())
         if (is_error)
             sys$exit(1)
     }
