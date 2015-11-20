@@ -66,7 +66,8 @@ printf = function (format, ..., file = stdout(), nl = TRUE)
 #' Execute the \code{entry_point} function defined by the caller
 #'
 #' Execute an entry point function, but only if the calling code is executed as
-#' a stand-alone script, not when it is imported as a module.
+#' a stand-alone script, not when it is imported as a module or sourced in
+#' interactive mode.
 #'
 #' @param entry_point code or function to run (default: \code{main})
 #' @return This function is called for its side-effect. If the calling code was
@@ -80,7 +81,7 @@ printf = function (format, ..., file = stdout(), nl = TRUE)
 #' @examples
 #' \dontrun{
 #' main = function () { … }
-#' # Run function `main`
+#' # Run function with name `main`
 #' sys$run()
 #'
 #' # Run the specified function
