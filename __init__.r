@@ -93,7 +93,7 @@ run = function (entry_point = main) {
     caller = parent.frame()
     caller_name = evalq(modules::module_name(), envir = caller)
 
-    if (! is.null(caller_name))
+    if (interactive() || ! is.null(caller_name))
         return(invisible())
 
     error = tryCatch({
