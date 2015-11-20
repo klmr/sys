@@ -397,7 +397,6 @@ arg = function (name, description, default, validate, transform) {
             }
             else {
                 check_positional_arg_valid()
-                # TODO: Treat arglist
                 store_result(positional[[arg_pos]], token)
                 arg_pos = arg_pos + 1
             }
@@ -408,7 +407,6 @@ arg = function (name, description, default, validate, transform) {
         }
         else if (state == TRAILING) {
             check_positional_arg_valid()
-            # TODO: Treat arglist
             store_result(positional[[arg_pos]], token)
             arg_pos = arg_pos + 1
         }
