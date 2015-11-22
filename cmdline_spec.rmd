@@ -155,6 +155,8 @@ test('some.file', list(opt('x', 'extra', 'an extra argument'),
                        arg('filename', 'the input file', '')))
 test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v'))))
+test(character(0), list(arg('test-this', 'first argument', ''),
+                        arg('test_this', 'duplicate argument', '')))
 ```
 
 ### Collection of short arguments
@@ -199,6 +201,10 @@ test('--optim=2',
 test(c('--verbose', '--silent'), list(opt('v', 'verbose', 'verbose logging', FALSE),
                                       opt('s', 'silent', 'silent output', FALSE)),
      list(verbose = TRUE, silent = TRUE))
+test(character(0), list(opt('a', 'avoid-null', 'avoid NULL values', FALSE)),
+     list(avoid_null = FALSE))
+test(c('--avoid-null'), list(opt('a', 'avoid-null', 'avoid NULL values', FALSE)),
+     list(avoid_null = TRUE))
 ```
 
 ### Default arguments
