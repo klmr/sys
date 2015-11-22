@@ -56,6 +56,15 @@ parse = function (..., args) {
                         args_definition)
     positional = setNames(positional, lapply(positional, `[[`, 'name'))
 
+    # Ensure there are no argument name duplicates, even after converting
+    # argument names into valid R identifiers.
+
+    r_names = gsub('-', '_', unlist(lapply(args_definition, `[[`, 'name')))
+    if (any(duplicated(r_names)))
+        stop('Command line definition contains duplicate names', call. = FALSE)
+
+    # Parse and validate arguments.
+
     result = try(.parse(args, args_definition, opts_long, opts_short,
                         positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
@@ -420,6 +429,10 @@ arg = function (name, description, default, validate, transform) {
     optional_defaults = lapply(optional[unset], `[[`, 'default')
     result[optional_names[unset]] = mapply(transform,
                                            optional[unset], optional_defaults)
+
+    # Make all option names into valid R names.
+
+    names(result) = gsub('-', '_', names(result))
 
     # Ensure that all arguments are set.
 
