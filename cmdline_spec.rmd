@@ -114,8 +114,10 @@ test = function (cmdline, spec, expected) {
     args$args = cmdline
     parsed = tryCatch(do.call(parse, args), error = identity)
 
-    if (inherits(parsed, 'error'))
+    if (inherits(parsed, 'sys$cmdline$help'))
         print(parsed)
+    else if (inherits(parsed, 'error'))
+        stop(conditionMessage(parsed), call. = FALSE)
     else {
         if (! lists_equal(parsed, expected)) {
             if (length(parsed) == 0)
