@@ -89,6 +89,11 @@ printf = function (format, ..., file = stdout(), nl = TRUE)
 #'
 #' # Run the specified code
 #' sys$run({ … })
+#'
+#' # Quit with error
+#' sys$run({
+#'     sys$exit(1, 'Optional message')
+#' })
 #' }
 run = function (entry_point = main) {
     caller = parent.frame()
