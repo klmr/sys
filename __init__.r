@@ -89,6 +89,11 @@ printf = function (format, ..., file = stdout(), nl = TRUE)
 #'
 #' # Run the specified code
 #' sys$run({ … })
+#'
+#' # Quit with error
+#' sys$run({
+#'     sys$exit(1, 'Optional message')
+#' })
 #' }
 run = function (entry_point = main) {
     caller = parent.frame()
@@ -98,10 +103,17 @@ run = function (entry_point = main) {
         return(invisible())
 
     error = tryCatch({
-        if (class(substitute(entry_point)) == '{')
-            exit(entry_point)
-
-        exit(eval(substitute(main(), list(main = entry_point)), envir = caller))
+        if (class(substitute(entry_point)) == '{') {
+            # Evaluating `entry_point` is wrapped into a function call so that,
+            # when evaluation is aborted by a call to `stop` inside the entry
+            # point expression, the call stack will contain `run()`, rather than
+            # an obscure `doTryCatch(…)` expression.
+            run = function () entry_point
+            run()
+        }
+        else
+            eval(substitute(main(), list(main = entry_point)), envir = caller)
+        exit()
     }, error = identity)
 
     if (inherits(error, 'sys$cmdline$help')) {
