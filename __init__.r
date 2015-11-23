@@ -98,8 +98,14 @@ run = function (entry_point = main) {
         return(invisible())
 
     error = tryCatch({
-        if (class(substitute(entry_point)) == '{')
-            entry_point
+        if (class(substitute(entry_point)) == '{') {
+            # Evaluating `entry_point` is wrapped into a function call so that,
+            # when evaluation is aborted by a call to `stop` inside the entry
+            # point expression, the call stack will contain `run()`, rather than
+            # an obscure `doTryCatch(…)` expression.
+            run = function () entry_point
+            run()
+        }
         else
             eval(substitute(main(), list(main = entry_point)), envir = caller)
         exit()
