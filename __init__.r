@@ -99,9 +99,10 @@ run = function (entry_point = main) {
 
     error = tryCatch({
         if (class(substitute(entry_point)) == '{')
-            exit(entry_point)
-
-        exit(eval(substitute(main(), list(main = entry_point)), envir = caller))
+            entry_point
+        else
+            eval(substitute(main(), list(main = entry_point)), envir = caller)
+        exit()
     }, error = identity)
 
     if (inherits(error, 'sys$cmdline$help')) {
