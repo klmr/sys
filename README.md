@@ -25,7 +25,7 @@ sys$run({
                              arg('expression', 'mathematical expression'))
 
     result = eval(parse(text = args$expression))
-    if (! args$`allow-nan` && is.nan(result))
+    if (! args$allow_nan && is.nan(result))
         sys$exit(1, 'Invalid NaN result')
     sys$printf('%.*f', args$digits, result)
 })
