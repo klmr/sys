@@ -430,10 +430,6 @@ arg = function (name, description, default, validate, transform) {
     result[optional_names[unset]] = mapply(transform,
                                            optional[unset], optional_defaults)
 
-    # Make all option names into valid R names.
-
-    names(result) = gsub('-', '_', names(result))
-
     # Ensure that all arguments are set.
 
     mandatory = Filter(function (x) ! x$optional, options)
@@ -446,6 +442,10 @@ arg = function (name, description, default, validate, transform) {
         stop(sprintf('Mandatory argument%s %s not provided', plural,
                      paste(sQuote(unset_options), collapse = ', ')))
     }
+
+    # Make all option names into valid R names.
+
+    names(result) = gsub('-', '_', names(result))
 
     result
 }
