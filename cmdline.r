@@ -101,8 +101,8 @@ usage = function (options) {
 #'
 #' \code{opt} creates an option-style command line argument (used via
 #' \code{--long_name} or \code{-s}).
-#' @param short the option’s short name
-#' @param long the option’s long name
+#' @param short the option’s short name, or \code{''}
+#' @param long the option’s long name, or \code{''}
 #' @param description a user-readable description text
 #' @param default the default value, for optional arguments (optional)
 #' @param validate a validation function for the argument value (optional)
