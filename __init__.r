@@ -23,7 +23,7 @@
 # its formals. FIXME: Reconsider if this is an acceptable strategy.
 
 .sys_env = new.env(parent = parent.env(.GlobalEnv))
-assign('library', library, envir = .sys_env)
+assign('library', .library, envir = .sys_env)
 attach(.sys_env, name = 'helper:sys', warn.conflicts = FALSE)
 
 #' The command line arguments
