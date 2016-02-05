@@ -152,6 +152,7 @@ opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
     stopifnot(short != '' || long != '')
+    stopifnot(short == '' || nchar(short) == 1)
     stopifnot(is.character(description) && length(description) == 1)
     stopifnot(missing(default) || length(default) <= 1)
 
