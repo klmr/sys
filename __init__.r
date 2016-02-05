@@ -1,31 +1,3 @@
-#' Make calls to \code{library} extra silent
-#'
-#' Command line tools don’t want to clutter their output with unnecessary noise.
-#' This replaces the default \code{library} arguments to ensure this silence. It
-#' additionally wraps all calls in \code{suppressMessages} to be extra silent.
-#' This is mainly necessary because not all packages play nicely and use
-#' \code{message} inappropriately instead of \code{packageStartupMessage}.
-.library = function (package, help, pos = 2, lib.loc = NULL,
-                     character.only = FALSE, logical.return = FALSE,
-                     warn.conflicts = FALSE, quietly = TRUE, verbose = FALSE) {
-    call = match.call()
-    call[[1]] = quote(base::library)
-    wrap = if (quietly && ! warn.conflicts)
-        suppressMessages
-    else
-        identity
-    wrap(eval.parent(call))
-}
-
-# Monkey-patch the `library` function. Attach the above function to the global
-# object search path so that it’s found and called in the user code.
-# Alternatively we could actually replace the function in `base` and just change
-# its formals. FIXME: Reconsider if this is an acceptable strategy.
-
-.sys_env = new.env(parent = parent.env(.GlobalEnv))
-assign('library', .library, envir = .sys_env)
-attach(.sys_env, name = 'helper:sys', warn.conflicts = FALSE)
-
 #' The command line arguments
 args = commandArgs(trailingOnly = TRUE)
 
