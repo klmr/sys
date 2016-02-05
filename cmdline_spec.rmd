@@ -159,6 +159,12 @@ test(character(0), list(arg('test-this', 'first argument', ''),
                         arg('test_this', 'duplicate argument', '')))
 ```
 
+### Programming error
+
+```{r}
+test('x', list(opt('foo', 'f', 'frobnicate')))
+```
+
 ### Collection of short arguments
 
 ```{r}
