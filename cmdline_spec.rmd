@@ -155,13 +155,14 @@ test('some.file', list(opt('x', 'extra', 'an extra argument'),
                        arg('filename', 'the input file', '')))
 test('-vvv', list(opt('v', '', 'level of verbose logging', '',
                       validate = function (value) value %in% c('', 'v'))))
-test(character(0), list(arg('test-this', 'first argument', ''),
-                        arg('test_this', 'duplicate argument', '')))
 ```
 
 ### Programming error
 
 ```{r}
+test(character(0), list(arg('test-this', 'first argument', ''),
+                        arg('test_this', 'duplicate argument', '')))
+
 test('x', list(opt('foo', 'f', 'frobnicate')))
 ```
 

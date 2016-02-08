@@ -279,7 +279,8 @@ arg = function (name, description, default, validate, transform) {
 }
 
 .sys_help = function (options) {
-    structure(list(call = call('parse', options)),
+    # FIXME: I used to not need message` here. What’s going on?
+    structure(list(message = 'help', call = call('parse', options)),
               class = c('sys$cmdline$help', 'error', 'condition'))
 }
 
