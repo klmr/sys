@@ -23,3 +23,13 @@ test_that('wrong arguments cause errors', {
                        validate = function (value) value %in% c('', 'v'))),
                 shows_error('-v'))
 })
+
+test_that('wrong usage causes errors', {
+    expect_that(xc(character(0),
+                   arg('test-this', 'first argument', ''),
+                   arg('test_this', 'duplicate argument', '')),
+                throws_error('Command line definition contains duplicate names'))
+
+    expect_that(xc('x', opt('foo', 'f', 'frobnicate')),
+                throws_error('short == "" || nchar(short) == 1'))
+})
