@@ -30,4 +30,10 @@ test_that('default options work', {
     expect_that(xc(character(0),
                    opt('a', 'avoid-null', 'avoid NULL values', FALSE)),
                 args_equal(avoid_null = FALSE))
+
+    expect_that(xc('-vO2',
+                   opt('v', 'verbose', 'verbose logging', FALSE),
+                   opt('O', 'optim', 'optimization level', 1),
+                   arg('tmpdir', 'the path of the temp dir', '~/tmp')),
+                args_equal(verbose = TRUE, optim = 2, tmpdir = '~/tmp'))
 })
