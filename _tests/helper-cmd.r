@@ -3,7 +3,8 @@ cmd = modules::import('../cmdline')
 shows_help = function ()
     function (x)
         expectation(inherits(x, 'try-error') &&
-                    inherits(attr(x, 'condition'), 'sys$cmdline$help'),
+                    inherits(attr(x, 'condition'), 'sys$cmdline$help') &&
+                    ! inherits(attr(x, 'condition'), 'sys$cmdline$error'),
                     'does not show help', 'shows help')
 
 args_equal = function (...) {
