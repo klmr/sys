@@ -1,3 +1,3 @@
 library(testthat)
 
-test_dir(module_file())
+test_dir(modules::module_file())
