@@ -99,3 +99,6 @@ run = function (entry_point = main) {
 }
 
 cmdline = modules::import('./cmdline')
+
+if (is.null(modules::module_name()))
+    modules::import('./_tests')
