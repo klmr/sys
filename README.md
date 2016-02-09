@@ -1,5 +1,7 @@
 # Command line applications for R
 
+
+
 This is a work in progress for a `sys` module that supports command line
 applications in R. Inspired by Python, it implements a simple, opinionated
 paradigm for implementing command line tools.
@@ -13,31 +15,61 @@ getopt and argparse, but with an R-like API.
 
 This module supports writing tools using code such as the following:
 
+
 ```r
 #!/usr/bin/env Rscript
 
 sys = modules::import('sys')
 
+"A simple mathematical expression evaluator"
+VERSION = '1.0'
+
 sys$run({
-    sys$cmdline$describe('A simple mathematical expression evaluator')
     args = sys$cmdline$parse(opt('n', 'allow-nan', 'allow NaN results (otherwise, the program exits with a failure)', FALSE),
                              opt('d', 'digits', 'number of digits to print', 0),
                              arg('expression', 'mathematical expression'))
 
     result = eval(parse(text = args$expression))
     if (! args$allow_nan && is.nan(result))
-        sys$exit(1, 'Invalid NaN result')
+        sys$exit(1, 'NaN result invalid')
     sys$printf('%.*f', args$digits, result)
 })
 ```
 
-Saving the code as `calc.r`, making it executable and running it, via
+Saving the code as `calc.r`, making it executable and running
+it, via
 
-    ./calc.r -d 2 '10 / 3'
+```bash
+./calc.r -d 2 "10 / 3"
+```
 
-yields the output `3.33`. Running it without arguments, with invalid arguments
-or via `./calc.r --help` displays a formatted help message, listing the
-available options, their description and default values.
+yields the output `3.33`. Running it with missing
+or invalid arguments displays an error message:
+
+```bash
+./calc.r
+```
+```
+Usage: ./calc.r [--allow-nan] [--digits=DIGITS] expression
+Error: Mandatory argument ‘expression’ not provided
+```
+
+Running it via `./calc.r --help` displays a formatted help message, listing the
+available options, their description and default values:
+
+```
+A simple mathematical expression evaluator (version 1.0)
+
+Usage: ./calc.r [--allow-nan] [--digits=DIGITS] expression
+
+Positional arguments:
+  expression         mathematical expression
+
+Options:
+  -n, --allow-nan    allow NaN results (otherwise, the program exits with a
+                     failure) (default: FALSE)
+  -d, --digits       number of digits to print (default: 0)
+```
 
 ## Status
 
