@@ -1,4 +1,5 @@
 cmd = modules::import('../cmdline')
+sink() # To show tests, since we’re never calling `sys$run`.
 
 shows_help = function ()
     function (x)
