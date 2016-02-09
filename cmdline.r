@@ -249,14 +249,23 @@ arg = function (name, description, default, validate, transform) {
         name
 }
 
-.option_description = function (option) {
-    name = if (inherits(option, 'sys$cmdline$opt'))
-            paste(c(.make_opt('-', option$short),
-                    .make_opt('--', option$long)), collapse = ', ')
-        else
-            option$name
+.option_name = function (option) UseMethod('.option_name')
 
+`.option_name.sys$cmdline$opt` = function (option) {
+    nonnull = function (x) if (is.null(x)) '' else x
+    short_opt_name = nonnull(.make_opt('-', option$short))
+    long_opt_name = nonnull(.make_opt('--', option$long))
+
+    sep = if(nzchar(short_opt_name) && nzchar(long_opt_name)) ', ' else '  '
+    sprintf('% 4s%s%s', short_opt_name, sep, long_opt_name)
+}
+
+`.option_name.sys$cmdline$arg` = function (option)
+    sprintf('  %s', option$name)
+
+.option_description = function (option) {
     exdent = 16
+    name = .option_name(option)
     description = option$description
     if (option$optional)
         description = paste(description,
@@ -264,7 +273,7 @@ arg = function (name, description, default, validate, transform) {
     paste(strwrap(description,
                   width = .termwidth() - exdent,
                   exdent = exdent,
-                  initial = sprintf('% 14s: ', name)),
+                  initial = sprintf('% -20s ', name)),
           collapse = '\n')
 }
 
