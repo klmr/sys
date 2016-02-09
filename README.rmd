@@ -1,0 +1,66 @@
+# Command line applications for R
+
+```{r echo=FALSE}
+system('stty columns 80')
+script_name = 'calc.r'
+
+strip = function (str)
+    sub('^\\s*(.*?)\\s*$', '\\1', str)
+
+inline = function (code)
+    paste0('`', code, '`')
+
+code = function (code)
+    paste('```', code, '```', sep = '\n')
+
+exec = function (cmd)
+    strip(paste(suppressWarnings(system(cmd, intern = TRUE)), collapse = '\n'))
+
+script = function (...) {
+    cmd = paste(c(sprintf('./%s', script_name), unlist(list(...)), '2>&1'),
+                collapse = ' ')
+    exec(cmd)
+}
+```
+
+This is a work in progress for a `sys` module that supports command line
+applications in R. Inspired by Python, it implements a simple, opinionated
+paradigm for implementing command line tools.
+
+To ensure that the code of the command line application is itself reusable,
+`sys$run` offers an entry point that is only invoked when the code is run
+self-contained from the command line, not when it’s included as a module
+(similar to Python’s `if __name__ == '__main__'`). The module also offers a
+self-contained command line parser that supports largely the same syntax as
+getopt and argparse, but with an R-like API.
+
+This module supports writing tools using code such as the following:
+
+```{r eval=FALSE, code=readLines(script_name)}
+```
+
+Saving the code as `r inline(script_name)`, making it executable and running it,
+via
+
+```bash
+./calc.r -d 2 '10 / 3'
+```
+
+yields the output `r inline(script('-d 2 "10 / 3"'))`. Running it without
+arguments or with invalid arguments displays an error message:
+
+```{r echo=FALSE, results='asis'}
+cat(code(script()))
+```
+
+Running it via `./calc.r --help` displays a formatted help message, listing the
+available options, their description and default values:
+
+```{r echo=FALSE, results='asis'}
+cat(code(script('--help')))
+```
+
+## Status
+
+This module already largely works but the API (in particular that of the command
+line parser) are still subject to change. Use at your own risk.

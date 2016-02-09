@@ -1,5 +1,5 @@
 .PHONY: all
-all: test documentation
+all: test documentation README.md
 
 module_files = __init__.r cmdline.r
 
@@ -11,6 +11,9 @@ test: ${module_files}
 documentation: cmdline_spec.html
 
 cmdline_spec.html: ${module_files}
+
+README.md: README.rmd ${module_files}
+	Rscript -e 'knitr::knit("$<", "$@")'
 
 %.html: %.rmd
 	Rscript -e 'knitr::knit2html("$<")'
