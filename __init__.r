@@ -9,6 +9,18 @@ script_name = local({
     sub('--file=', '', file)
 })
 
+#' The description of the script
+#'
+#' @return The description of the script, if provided, \code{NULL} otherwise.
+description = function () {
+    if (length(.script_output) == 0)
+        return(NULL)
+    if (! grepl('^\\[1\\] ".*"$', .script_output[[1]]))
+        return(NULL)
+
+    sub('^\\[1\\] "(.*)"$', '\\1', .script_output[[1]])
+}
+
 #' Quit the program
 #'
 #' @param code numeric exit code (default: \code{0})
@@ -74,6 +86,9 @@ run = function (entry_point = main) {
     if (interactive() || ! is.null(caller_name))
         return(invisible())
 
+    # Restore standard output once script entry point is running.
+    sink()
+
     error = tryCatch({
         if (class(substitute(entry_point)) == '{') {
             # Evaluating `entry_point` is wrapped into a function call so that,
@@ -100,5 +115,16 @@ run = function (entry_point = main) {
 
 cmdline = modules::import('./cmdline')
 
-if (is.null(modules::module_name()))
+if (is.null(modules::module_name())) {
     modules::import('./_tests')
+} else if (! interactive()) {
+    # Redirect all output from the script. This is done to prevent unintended
+    # clutter, but also to capture the script “description”.
+    script_output_conn = textConnection('.script_output',
+                                        open = 'w',
+                                        local = TRUE,
+                                        encoding = 'UTF-8')
+    sink(file = script_output_conn, type = 'output')
+} else {
+    .script_output = ''
+}
