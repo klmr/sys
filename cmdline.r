@@ -100,7 +100,8 @@ help = function (options) {
 usage = function (options) {
     cmd = paste(.sys$script_name,
                 paste(sapply(options, .option_syntax), collapse = ' '))
-    paste('Usage:', cmd)
+    paste(strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: '),
+          collapse = '\n')
 }
 
 #' Create a command line argument
