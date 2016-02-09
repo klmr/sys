@@ -21,6 +21,22 @@ description = function () {
     sub('^\\[1\\] "(.*)"$', '\\1', .script_output[[1]])
 }
 
+# The environment that is calling `import(sys)`
+.script_env = local({
+    n = 1
+
+    while (isNamespace(topenv((env = parent.frame(n)))))
+        n = n + 1
+    env
+})
+
+#' The version of the script
+#'
+#' @return The version of the script, if provided, \code{NULL} otherwise.
+version = function ()
+    mget('VERSION', .script_env, mode = 'character', ifnotfound = list(NULL),
+         inherits = FALSE)[[1]]
+
 #' Quit the program
 #'
 #' @param code numeric exit code (default: \code{0})
