@@ -36,16 +36,19 @@ sys$run({
 })
 ```
 
-Saving the code as `calc.r`, making it executable and running it,
-via
+Saving the code as `calc.r`, making it executable and running
+it, via
 
 ```bash
-./calc.r -d 2 '10 / 3'
+./calc.r -d 2 "10 / 3"
 ```
 
-yields the output `3.33`. Running it without
-arguments or with invalid arguments displays an error message:
+yields the output `3.33`. Running it with missing
+or invalid arguments displays an error message:
 
+```bash
+./calc.r
+```
 ```
 Usage: ./calc.r [--allow-nan] [--digits=DIGITS] expression
 Error: Mandatory argument ‘expression’ not provided
