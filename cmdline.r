@@ -73,6 +73,8 @@ parse = function (..., args) {
     }
     else if (identical(result, 'help'))
         stop(.sys_help(args_definition))
+    else if (identical(result, 'version'))
+        stop(.sys_version())
     else
         result
 }
@@ -109,6 +111,11 @@ usage = function (options) {
     usage = strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: ')
     paste(usage, collapse = '\n')
 }
+
+#' \code{version} returns the version string, if provided; otherwise \code{""}.
+#' @rdname help
+version = function ()
+    .sys$version()
 
 #' Create a command line argument
 #'
@@ -314,6 +321,11 @@ arg = function (name, description, default, validate, transform) {
               class = c('sys$cmdline$help', 'error', 'condition'))
 }
 
+.sys_version = function () {
+    structure(list(message = 'version', call = call('parse', options)),
+              class = c('sys$cmdline$version', 'sys$cmdline$help', 'error', 'condition'))
+}
+
 .parse = function (args, options, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
@@ -373,6 +385,8 @@ arg = function (name, description, default, validate, transform) {
                 state = TRAILING
             else if (token == '--help' || token == '-h')
                 return('help')
+            else if (token == '--version')
+                return('version')
             else if (grepl('^--', token)) {
                 match = regexpr(long_option_pattern, token, perl = TRUE)
                 if (match == -1)
@@ -536,6 +550,14 @@ modules::register_S3_method('print', 'sys$cmdline$error', `print.sys$cmdline$err
     invisible(x)
 }
 modules::register_S3_method('print', 'sys$cmdline$help', `print.sys$cmdline$help`)
+
+`print.sys$cmdline$version` = function (x, ...) {
+    args = list(...)
+    file = if (! is.null(args$file)) args$file else ''
+    cat(version(), '\n', file = file)
+    invisible(x)
+}
+modules::register_S3_method('print', 'sys$cmdline$version', `print.sys$cmdline$version`)
 
 .reggroup = function (match, string, group) {
     start = attr(match, 'capture.start')[, group]
