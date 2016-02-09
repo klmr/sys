@@ -84,8 +84,14 @@ parse = function (..., args) {
 #' @param options list of options
 #' @return Character vector containing the help message.
 help = function (options) {
-    arg_help = paste(sapply(options, .option_description), collapse = '\n')
-    paste0(usage(options), '\n\nArguments:\n', arg_help)
+    is = function (cls) function (x) inherits(x, cls)
+    args = Filter(is('sys$cmdline$arg'), options)
+    opts = Filter(is('sys$cmdline$opt'), options)
+    arg_help = paste(sapply(args, .option_description), collapse = '\n')
+    opt_help = paste(sapply(opts, .option_description), collapse = '\n')
+    paste0(usage(options),
+           '\n\nPositional arguments:\n', arg_help,
+           '\n\nOptions:\n', opt_help)
 }
 
 #' \code{usage} returns a formatted usage message created from a list of
@@ -94,7 +100,8 @@ help = function (options) {
 usage = function (options) {
     cmd = paste(.sys$script_name,
                 paste(sapply(options, .option_syntax), collapse = ' '))
-    paste('Usage:', cmd)
+    paste(strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: '),
+          collapse = '\n')
 }
 
 #' Create a command line argument
@@ -225,40 +232,58 @@ arg = function (name, description, default, validate, transform) {
 .make_opt = function (prefix, name)
     if (name == '') NULL else paste0(prefix, name)
 
-.option_syntax = function (option) {
-    if (inherits(option, 'sys$cmdline$opt')) {
-        name = .make_opt('--', option$long)
-        if (is.null(name))
-            name = .make_opt('-', option$short)
+.option_usage = function (option)
+    UseMethod('.option_usage')
 
-        if (! (option$optional && inherits(option$default, 'logical')))
-            name = paste(name, toupper(option$name))
-    }
-    else
-        name = option$name
+`.option_usage.sys$cmdline$opt` = function (option) {
+    usage = .make_opt('--', option$long)
+    use_short = is.null(usage)
+    if (use_short)
+        usage = .make_opt('-', option$short)
 
-    if (option$optional)
-        sprintf('[%s]', name)
+    if (! (option$optional && inherits(option$default, 'logical')))
+        paste(usage, toupper(option$name), sep = if (use_short) ' ' else '=')
     else
-        name
+        usage
 }
 
-.option_description = function (option) {
-    name = if (inherits(option, 'sys$cmdline$opt'))
-            paste(c(.make_opt('-', option$short),
-                    .make_opt('--', option$long)), collapse = ', ')
-        else
-            option$name
+`.option_usage.sys$cmdline$arg` = function (option)
+    option$name
 
-    exdent = 16
+.option_syntax = function (option) {
+    usage = .option_usage(option)
+
+    if (option$optional)
+        paste0('[', usage, ']')
+    else
+        usage
+}
+
+.option_name = function (option)
+    UseMethod('.option_name')
+
+`.option_name.sys$cmdline$opt` = function (option) {
+    nonnull = function (x) if (is.null(x)) '' else x
+    short_opt_name = nonnull(.make_opt('-', option$short))
+    long_opt_name = nonnull(.make_opt('--', option$long))
+
+    sep = if(nzchar(short_opt_name) && nzchar(long_opt_name)) ', ' else '  '
+    sprintf('% 4s%s%s', short_opt_name, sep, long_opt_name)
+}
+
+`.option_name.sys$cmdline$arg` = function (option)
+    sprintf('  %s', option$name)
+
+.option_description = function (option) {
+    name = .option_name(option)
     description = option$description
     if (option$optional)
         description = paste(description,
                             sprintf('(default: %s)', deparse(option$default)))
     paste(strwrap(description,
-                  width = .termwidth() - exdent,
-                  exdent = exdent,
-                  initial = sprintf('% 14s: ', name)),
+                  width = .termwidth(),
+                  exdent = 21,
+                  initial = sprintf('% -20s ', name)),
           collapse = '\n')
 }
 
