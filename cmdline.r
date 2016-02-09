@@ -275,15 +275,14 @@ arg = function (name, description, default, validate, transform) {
     sprintf('  %s', option$name)
 
 .option_description = function (option) {
-    exdent = 16
     name = .option_name(option)
     description = option$description
     if (option$optional)
         description = paste(description,
                             sprintf('(default: %s)', deparse(option$default)))
     paste(strwrap(description,
-                  width = .termwidth() - exdent,
-                  exdent = exdent,
+                  width = .termwidth(),
+                  exdent = 21,
                   initial = sprintf('% -20s ', name)),
           collapse = '\n')
 }
