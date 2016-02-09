@@ -231,25 +231,35 @@ arg = function (name, description, default, validate, transform) {
 .make_opt = function (prefix, name)
     if (name == '') NULL else paste0(prefix, name)
 
-.option_syntax = function (option) {
-    if (inherits(option, 'sys$cmdline$opt')) {
-        name = .make_opt('--', option$long)
-        if (is.null(name))
-            name = .make_opt('-', option$short)
+.option_usage = function (option)
+    UseMethod('.option_usage')
 
-        if (! (option$optional && inherits(option$default, 'logical')))
-            name = paste(name, toupper(option$name))
-    }
-    else
-        name = option$name
+`.option_usage.sys$cmdline$opt` = function (option) {
+    usage = .make_opt('--', option$long)
+    use_short = is.null(usage)
+    if (use_short)
+        usage = .make_opt('-', option$short)
 
-    if (option$optional)
-        sprintf('[%s]', name)
+    if (! (option$optional && inherits(option$default, 'logical')))
+        paste(usage, toupper(option$name), sep = if (use_short) ' ' else '=')
     else
-        name
+        usage
 }
 
-.option_name = function (option) UseMethod('.option_name')
+`.option_usage.sys$cmdline$arg` = function (option)
+    option$name
+
+.option_syntax = function (option) {
+    usage = .option_usage(option)
+
+    if (option$optional)
+        paste0('[', usage, ']')
+    else
+        usage
+}
+
+.option_name = function (option)
+    UseMethod('.option_name')
 
 `.option_name.sys$cmdline$opt` = function (option) {
     nonnull = function (x) if (is.null(x)) '' else x
