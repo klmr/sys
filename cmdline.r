@@ -84,8 +84,14 @@ parse = function (..., args) {
 #' @param options list of options
 #' @return Character vector containing the help message.
 help = function (options) {
-    arg_help = paste(sapply(options, .option_description), collapse = '\n')
-    paste0(usage(options), '\n\nArguments:\n', arg_help)
+    is = function (cls) function (x) inherits(x, cls)
+    args = Filter(is('sys$cmdline$arg'), options)
+    opts = Filter(is('sys$cmdline$opt'), options)
+    arg_help = paste(sapply(args, .option_description), collapse = '\n')
+    opt_help = paste(sapply(opts, .option_description), collapse = '\n')
+    paste0(usage(options),
+           '\n\nPositional arguments:\n', arg_help,
+           '\n\nOptions:\n', opt_help)
 }
 
 #' \code{usage} returns a formatted usage message created from a list of
