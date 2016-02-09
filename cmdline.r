@@ -89,9 +89,15 @@ help = function (options) {
     opts = Filter(is('sys$cmdline$opt'), options)
     arg_help = paste(sapply(args, .option_description), collapse = '\n')
     opt_help = paste(sapply(opts, .option_description), collapse = '\n')
-    paste0(usage(options),
-           '\n\nPositional arguments:\n', arg_help,
-           '\n\nOptions:\n', opt_help)
+
+    description = .sys$description()
+    version = sprintf(' (version %s)', .sys$version())
+    if (length(description) > 0)
+        description = c(strwrap(paste0(description, version), .termwidth()), '')
+
+    paste(paste(c(description, usage(options)), collapse = '\n'),
+          '\nPositional arguments:', arg_help,
+          '\nOptions:', opt_help, sep = '\n')
 }
 
 #' \code{usage} returns a formatted usage message created from a list of
@@ -100,8 +106,8 @@ help = function (options) {
 usage = function (options) {
     cmd = paste(.sys$script_name,
                 paste(sapply(options, .option_syntax), collapse = ' '))
-    paste(strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: '),
-          collapse = '\n')
+    usage = strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: ')
+    paste(usage, collapse = '\n')
 }
 
 #' Create a command line argument
@@ -304,7 +310,6 @@ arg = function (name, description, default, validate, transform) {
 }
 
 .sys_help = function (options) {
-    # FIXME: I used to not need message` here. What’s going on?
     structure(list(message = 'help', call = call('parse', options)),
               class = c('sys$cmdline$help', 'error', 'condition'))
 }
