@@ -1,11 +1,5 @@
 language: R
 
-r_github_packages:
-    - klmr/modules
-
-r_binary_packages:
-    - testthat
-
 install:
     - Rscript -e 'install.packages(c("devtools", "testthat"))'
     - Rscript -e 'devtools::install_github("klmr/modules")'
