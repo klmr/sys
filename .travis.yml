@@ -6,4 +6,5 @@ r_github_packages:
 r_binary_packages:
     - testthat
 
+install: true
 script: make test
