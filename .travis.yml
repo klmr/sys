@@ -1,0 +1,9 @@
+language: R
+
+r_github_packages:
+    - klmr/modules
+
+r_binary_packages:
+    - testthat
+
+script: make test
