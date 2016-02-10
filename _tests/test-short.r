@@ -1,10 +1,5 @@
 context('Short options')
 
-test_that('command line is parsed', {
-    expect_that(xc('-v', opt('v', 'verbose', 'verbose logging', FALSE)),
-                args_equal(verbose = TRUE))
-})
-
 test_that('single options work', {
     expect_that(xc('-O2', opt('O', '', 'optimization level', 1)),
                 args_equal(O = 2))
