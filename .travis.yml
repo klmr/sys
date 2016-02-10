@@ -6,5 +6,7 @@ r_github_packages:
 r_binary_packages:
     - testthat
 
-install: true
+install:
+    - Rscript -e 'install.packages("devtools", "testthat", "modules")'
+
 script: make test
