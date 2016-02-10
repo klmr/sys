@@ -1,5 +1,8 @@
 # Command line applications for R
 
+[![Travis CI
+status](https://travis-ci.org/klmr/sys.svg?branch=master)](https://travis-ci.org/klmr/sys)
+
 ```{r echo=FALSE}
 system('stty columns 80')
 script_name = 'calc.r'

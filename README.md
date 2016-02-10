@@ -1,5 +1,8 @@
 # Command line applications for R
 
+[![Travis CI
+status](https://travis-ci.org/klmr/sys.svg?branch=master)](https://travis-ci.org/klmr/sys)
+
 
 
 This is a work in progress for a `sys` module that supports command line
