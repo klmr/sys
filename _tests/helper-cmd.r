@@ -41,14 +41,7 @@ args_equal = function (...) {
     }
 }
 
-construct_parse_call = function (call) {
-    call$args = call$cmdline
-    call$cmdline = NULL
-    call[[1]] = call('$', quote(cmd), quote(parse))
-    call
-}
-
-xc = function (cmdline, ...) {
-    call = construct_parse_call(match.call(expand.dots = TRUE))
+xc = function (args, ...) {
+    call = `[[<-`(match.call(), 1, quote(cmd$parse))
     try(eval.parent(call), silent = TRUE)
 }
