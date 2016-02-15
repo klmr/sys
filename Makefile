@@ -1,7 +1,7 @@
 .PHONY: all
 all: test documentation README.md
 
-module_files = __init__.r cmdline.r
+module_files = __init__.r cmd.r
 
 .PHONY: test
 test: ${module_files}
