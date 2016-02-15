@@ -105,7 +105,8 @@ modules::import('./cmd', attach = TRUE)
 
 test_env = environment(parse)
 unlockBinding('.sys', test_env)
-test_env$.sys = list(script_name = 'test')
+unlockBinding('script_name', test_env$.sys)
+test_env$.sys$script_name = 'test'
 
 test = function (cmdline, spec, expected) {
     if (missing(expected))
