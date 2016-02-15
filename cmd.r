@@ -28,17 +28,17 @@
 #' sys = import('sys')
 #' \dontrun{
 #' # Use command line provided by `sys$args`
-#' args = sys$cmdline$parse(sys$cmdline$arg('file', 'the input file'))
+#' args = sys$cmd$parse(sys$cmd$arg('file', 'the input file'))
 #'
 #' # Or, equivalently, without qualifying `opt` and `arg`:
-#' args = sys$cmdline$parse(arg('file', 'the input file'))
+#' args = sys$cmd$parse(arg('file', 'the input file'))
 #' }
 #' # Explicitly provide arguments:
-#' sys$cmdline$parse(arg('file', 'the input file'), args = 'foo.txt')
+#' sys$cmd$parse(arg('file', 'the input file'), args = 'foo.txt')
 #'
-#' sys$cmdline$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
-#'                   arg('file', 'the input file'),
-#'                   args = c('-v', 'foo.txt'))
+#' sys$cmd$parse(opt('v', 'verbose', 'verbose logging?', FALSE),
+#'               arg('file', 'the input file'),
+#'               args = c('-v', 'foo.txt'))
 #' @seealso \code{opt}, \code{arg}
 parse = function (..., args) {
     if (missing(args))
@@ -47,12 +47,12 @@ parse = function (..., args) {
                                               list(opt = opt, arg = arg)), eval)
 
     stopifnot(length(args_definition) > 0)
-    stopifnot(all(sapply(args_definition, inherits, 'sys$cmdline$token')))
+    stopifnot(all(sapply(args_definition, inherits, 'sys$cmd$token')))
 
-    opts = Filter(function (x) inherits(x, 'sys$cmdline$opt'), args_definition)
+    opts = Filter(function (x) inherits(x, 'sys$cmd$opt'), args_definition)
     opts_long = setNames(opts, lapply(opts, `[[`, 'long'))
     opts_short = setNames(opts, lapply(opts, `[[`, 'short'))
-    positional = Filter(function (x) inherits(x, 'sys$cmdline$arg'),
+    positional = Filter(function (x) inherits(x, 'sys$cmd$arg'),
                         args_definition)
     positional = setNames(positional, lapply(positional, `[[`, 'name'))
 
@@ -87,8 +87,8 @@ parse = function (..., args) {
 #' @return Character vector containing the help message.
 help = function (options) {
     is = function (cls) function (x) inherits(x, cls)
-    args = Filter(is('sys$cmdline$arg'), options)
-    opts = Filter(is('sys$cmdline$opt'), options)
+    args = Filter(is('sys$cmd$arg'), options)
+    opts = Filter(is('sys$cmd$opt'), options)
     arg_help = paste(sapply(args, .option_description), collapse = '\n')
     opt_help = paste(sapply(opts, .option_description), collapse = '\n')
 
@@ -182,7 +182,7 @@ opt = function (short, long, description, default, validate, transform) {
     .expect_unary_function(validate)
     .expect_unary_function(transform)
     structure(as.list(environment()),
-              class = c('sys$cmdline$opt', 'sys$cmdline$token'))
+              class = c('sys$cmd$opt', 'sys$cmd$token'))
 }
 
 #' \code{arg} creates a positional command line argument (such as a file name).
@@ -225,7 +225,7 @@ arg = function (name, description, default, validate, transform) {
     .expect_unary_function(validate)
     .expect_unary_function(transform)
     structure(as.list(environment()),
-              class = c('sys$cmdline$arg', 'sys$cmdline$token'))
+              class = c('sys$cmd$arg', 'sys$cmd$token'))
 }
 
 .substitute_args = function (expr, env) {
@@ -248,7 +248,7 @@ arg = function (name, description, default, validate, transform) {
 .option_usage = function (option)
     UseMethod('.option_usage')
 
-`.option_usage.sys$cmdline$opt` = function (option) {
+`.option_usage.sys$cmd$opt` = function (option) {
     usage = .make_opt('--', option$long)
     use_short = is.null(usage)
     if (use_short)
@@ -260,7 +260,7 @@ arg = function (name, description, default, validate, transform) {
         usage
 }
 
-`.option_usage.sys$cmdline$arg` = function (option)
+`.option_usage.sys$cmd$arg` = function (option)
     option$name
 
 .option_syntax = function (option) {
@@ -275,7 +275,7 @@ arg = function (name, description, default, validate, transform) {
 .option_name = function (option)
     UseMethod('.option_name')
 
-`.option_name.sys$cmdline$opt` = function (option) {
+`.option_name.sys$cmd$opt` = function (option) {
     nonnull = function (x) if (is.null(x)) '' else x
     short_opt_name = nonnull(.make_opt('-', option$short))
     long_opt_name = nonnull(.make_opt('--', option$long))
@@ -284,7 +284,7 @@ arg = function (name, description, default, validate, transform) {
     sprintf('% 4s%s%s', short_opt_name, sep, long_opt_name)
 }
 
-`.option_name.sys$cmdline$arg` = function (option)
+`.option_name.sys$cmd$arg` = function (option)
     sprintf('  %s', option$name)
 
 .option_description = function (option) {
@@ -313,17 +313,17 @@ arg = function (name, description, default, validate, transform) {
 
 .sys_error = function (message, options) {
     structure(list(message = message, call = call('parse', options)),
-              class = c('sys$cmdline$error', 'sys$cmdline$help', 'error', 'condition'))
+              class = c('sys$cmd$error', 'sys$cmd$help', 'error', 'condition'))
 }
 
 .sys_help = function (options) {
     structure(list(message = 'help', call = call('parse', options)),
-              class = c('sys$cmdline$help', 'error', 'condition'))
+              class = c('sys$cmd$help', 'error', 'condition'))
 }
 
 .sys_version = function () {
     structure(list(message = 'version', call = call('parse', options)),
-              class = c('sys$cmdline$version', 'sys$cmdline$help', 'error', 'condition'))
+              class = c('sys$cmd$version', 'sys$cmd$help', 'error', 'condition'))
 }
 
 .parse = function (args, options, opts_long, opts_short, positional) {
@@ -502,7 +502,7 @@ arg = function (name, description, default, validate, transform) {
                   length(formals(f)) > 0)
 }
 
-`print.sys$cmdline$opt` = function (x, ...) {
+`print.sys$cmd$opt` = function (x, ...) {
     if (x$optional)
         cat(sprintf("%s: [-%s|--%s] (default: %s) %s\n",
                     x$name,
@@ -518,9 +518,9 @@ arg = function (name, description, default, validate, transform) {
                     x$description))
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmdline$opt', `print.sys$cmdline$opt`)
+modules::register_S3_method('print', 'sys$cmd$opt', `print.sys$cmd$opt`)
 
-`print.sys$cmdline$arg` = function (x, ...) {
+`print.sys$cmd$arg` = function (x, ...) {
     if (x$optional)
         cat(sprintf("[%s] (default: %s) %s\n",
                     x$name, deparse(x$default), x$description))
@@ -528,9 +528,9 @@ modules::register_S3_method('print', 'sys$cmdline$opt', `print.sys$cmdline$opt`)
         cat(sprintf("%s: %s\n", x$name, x$description))
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmdline$arg', `print.sys$cmdline$arg`)
+modules::register_S3_method('print', 'sys$cmd$arg', `print.sys$cmd$arg`)
 
-`print.sys$cmdline$error` = function (x, ...) {
+`print.sys$cmd$error` = function (x, ...) {
     call = conditionCall(x)
     options = lapply(call[-1][[1]], eval)
     message = paste('Error:', conditionMessage(x))
@@ -539,9 +539,9 @@ modules::register_S3_method('print', 'sys$cmdline$arg', `print.sys$cmdline$arg`)
     cat(paste(usage(options), message, sep = '\n'), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmdline$error', `print.sys$cmdline$error`)
+modules::register_S3_method('print', 'sys$cmd$error', `print.sys$cmd$error`)
 
-`print.sys$cmdline$help` = function (x, ...) {
+`print.sys$cmd$help` = function (x, ...) {
     call = conditionCall(x)
     options = lapply(call[-1][[1]], eval)
     args = list(...)
@@ -549,15 +549,15 @@ modules::register_S3_method('print', 'sys$cmdline$error', `print.sys$cmdline$err
     cat(help(options), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmdline$help', `print.sys$cmdline$help`)
+modules::register_S3_method('print', 'sys$cmd$help', `print.sys$cmd$help`)
 
-`print.sys$cmdline$version` = function (x, ...) {
+`print.sys$cmd$version` = function (x, ...) {
     args = list(...)
     file = if (! is.null(args$file)) args$file else ''
     cat(version(), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmdline$version', `print.sys$cmdline$version`)
+modules::register_S3_method('print', 'sys$cmd$version', `print.sys$cmd$version`)
 
 .reggroup = function (match, string, group) {
     start = attr(match, 'capture.start')[, group]

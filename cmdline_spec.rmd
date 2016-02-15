@@ -81,15 +81,15 @@ arg = function (name, description, default, validate, transform)
 Used to construct command line specification as follows:
 
 ```{r eval=FALSE}
-sys$parse_cmdline(sys$opt(…), sys$opt(…), sys$arg(…))
-sys$parse_cmdline(opt(…), opt(…), arg(…))
-sys$parse_cmdline(opt(…), opt(…), arg(…), c(alternative, command))
+sys$cmd$parse(sys$cmd$opt(…), sys$cmd$opt(…), sys$cmd$arg(…))
+sys$cmd$parse(opt(…), opt(…), arg(…))
+sys$cmd$parse(opt(…), opt(…), arg(…), c(alternative, command))
 ```
 
-… in other words, inside a `sys$parse_cmdline` call, `opt` and `arg` are
-available without qualification. The last argument of `sys$parse_cmdline` can be
-set to a command line invocation to parse (as a vector of arguments as they
-would appear on the command line). If none is given, `sys$args` is used.
+… in other words, inside a `sys$cmd$parse` call, `opt` and `arg` are available
+without qualification. The last argument of `sys$cmd$parse` can be set to a
+command line invocation to parse (as a vector of arguments as they would appear
+on the command line). If none is given, `sys$args` is used.
 
 The command line is given as an argument rather than a string since the parsing
 of the command line string into separate arguments is performed by the shell
@@ -99,13 +99,14 @@ concerning the escaping of special characters).
 ## Test cases
 
 ```{r echo=FALSE, show='hide', message=FALSE}
-modules::import('./cmdline', attach = TRUE)
+modules::import('./cmd', attach = TRUE)
 
 # Make testable
 
 test_env = environment(parse)
 unlockBinding('.sys', test_env)
-test_env$.sys = list(script_name = 'test')
+unlockBinding('script_name', test_env$.sys)
+test_env$.sys$script_name = 'test'
 
 test = function (cmdline, spec, expected) {
     if (missing(expected))
@@ -114,7 +115,7 @@ test = function (cmdline, spec, expected) {
     args$args = cmdline
     parsed = tryCatch(do.call(parse, args), error = identity)
 
-    if (inherits(parsed, 'sys$cmdline$help'))
+    if (inherits(parsed, 'sys$cmd$help'))
         print(parsed)
     else if (inherits(parsed, 'error'))
         stop(conditionMessage(parsed), call. = FALSE)

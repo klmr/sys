@@ -1,12 +1,12 @@
-cmd = modules::import('../cmdline')
+cmd = modules::import('../cmd')
 sink() # To show tests, since we’re never calling `sys$run`.
 
 #' Assert that a command line parse call shows the help
 shows_help = function ()
     function (x)
         expectation(inherits(x, 'try-error') &&
-                    inherits(attr(x, 'condition'), 'sys$cmdline$help') &&
-                    ! inherits(attr(x, 'condition'), 'sys$cmdline$error'),
+                    inherits(attr(x, 'condition'), 'sys$cmd$help') &&
+                    ! inherits(attr(x, 'condition'), 'sys$cmd$error'),
                     'does not show help', 'shows help')
 
 #' Assert that a command line parse call shows an error
@@ -18,7 +18,7 @@ shows_error = function (...) {
 
     function (x) {
         if (inherits(x, 'try-error') &&
-            inherits(attr(x, 'condition'), 'sys$cmdline$error')) {
+            inherits(attr(x, 'condition'), 'sys$cmd$error')) {
             args_present = sapply(sQuote(args), grepl,
                                   x = conditionMessage(attr(x, 'condition')),
                                   perl = TRUE)
@@ -50,12 +50,12 @@ args_equal = function (...) {
     }
 }
 
-#' Construct a call to \code{sys$cmdline$parse} for testing
+#' Construct a call to \code{sys$cmd$parse} for testing
 #'
 #' @param args character vector of the command line arguments
 #' @param ... command line argument definition, exactly as provided to
-#' \code{sys$cmdline$parse}
-#' @return Result of \code{sys$cmdline$parse(..., args = args)}, or a
+#' \code{sys$cmd$parse}
+#' @return Result of \code{sys$cmd$parse(..., args = args)}, or a
 #' \code{try-error} object.
 xc = function (args, ...) {
     call = `[[<-`(match.call(), 1, quote(cmd$parse))

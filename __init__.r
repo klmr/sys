@@ -119,8 +119,8 @@ run = function (entry_point = main) {
         exit()
     }, error = identity)
 
-    if (inherits(error, 'sys$cmdline$help')) {
-        is_error = inherits(error, 'sys$cmdline$error')
+    if (inherits(error, 'sys$cmd$help')) {
+        is_error = inherits(error, 'sys$cmd$error')
         base::print(error, file = if (is_error) stderr() else stdout())
         if (is_error)
             exit(1)
@@ -129,7 +129,7 @@ run = function (entry_point = main) {
         stop(error)
 }
 
-cmdline = modules::import('./cmdline')
+cmd = modules::import('./cmd')
 
 if (is.null(modules::module_name())) {
     modules::import('./_tests')
