@@ -97,9 +97,12 @@ help = function (options) {
     if (length(description) > 0)
         description = c(strwrap(paste0(description, version), .termwidth()), '')
 
-    paste(paste(c(description, usage(options)), collapse = '\n'),
-          '\nPositional arguments:', arg_help,
-          '\nOptions:', opt_help, sep = '\n')
+    opt_section = function (title, items)
+        if (nzchar(items)) c('', title, items) else NULL
+
+    paste(c(description, usage(options),
+            opt_section('Positional arguments:', arg_help),
+            opt_section('Options:', opt_help)), collapse = '\n')
 }
 
 #' \code{usage} returns a formatted usage message created from a list of
