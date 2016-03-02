@@ -21,3 +21,22 @@ README.md: README.rmd ${module_files}
 
 %.html: %.rmd
 	Rscript -e 'knitr::knit2html("$<")'
+
+.DEFAULT_GOAL := show-help
+
+# Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
+.PHONY: show-help
+show-help:
+	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
+	@echo
+	@sed -n "/^##/ { \
+		h; \
+		n; \
+		s/:.*//; \
+		G; \
+		s/^/$$(tput setaf 6)/; \
+		s/\\n##/$$(tput sgr0)---/; \
+		p; \
+	}" ${MAKEFILE_LIST} \
+	| sort --ignore-case \
+	| awk 'BEGIN {FS = "---"} { printf "%-30s\t%s\n", $$1, $$2 }'
