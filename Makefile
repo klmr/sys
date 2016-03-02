@@ -29,13 +29,13 @@ README.md: README.rmd ${module_files}
 show-help:
 	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
 	@echo
-	@sed -n "/^##/ { \
+	@sed -n "/^## / { \
 		h; \
 		n; \
 		s/:.*//; \
 		G; \
 		s/^/$$(tput setaf 6)/; \
-		s/\\n##/$$(tput sgr0)---/; \
+		s/\\n## /$$(tput sgr0)---/; \
 		p; \
 	}" ${MAKEFILE_LIST} \
 	| sort --ignore-case \
