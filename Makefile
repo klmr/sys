@@ -38,5 +38,6 @@ show-help:
 		s/\\n## /$$(tput sgr0)---/; \
 		p; \
 	}" ${MAKEFILE_LIST} \
-	| sort --ignore-case \
-	| awk 'BEGIN {FS = "---"} { printf "%-30s\t%s\n", $$1, $$2 }'
+	| LC_ALL='C' sort --ignore-case \
+	| awk 'BEGIN {FS = "---"} { printf "%-30s %s\n", $$1, $$2 }' \
+	| more --no-init --raw-control-chars
