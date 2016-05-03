@@ -34,10 +34,27 @@ show-help:
 		n; \
 		s/:.*//; \
 		G; \
-		s/^/$$(tput setaf 6)/; \
-		s/\\n## /$$(tput sgr0)---/; \
+		s/\\n## /---/; \
 		p; \
 	}" ${MAKEFILE_LIST} \
 	| LC_ALL='C' sort --ignore-case \
-	| awk 'BEGIN {FS = "---"} { printf "%-30s %s\n", $$1, $$2 }' \
+	| awk -F '---' \
+		-v ncol=$$COLUMNS \
+		-v indent=29 \
+		-v col_on="$$(tput setaf 6)" \
+		-v col_off="$$(tput sgr0)" \
+	'{ \
+		printf "%s%*s%s ", col_on, -indent, $$1, col_off; \
+		n = split($$2, words, " "); \
+		line_length = ncol - indent; \
+		for (i = 1; i <= n; i++) { \
+			line_length -= length(words[i]) + 1; \
+			if (line_length <= 0) { \
+				line_length = ncol - indent - length(words[i]) - 1; \
+				printf "\n%*s ", -indent, " "; \
+			} \
+			printf "%s ", words[i]; \
+		} \
+		printf "\n"; \
+	}' \
 	| more --no-init --raw-control-chars
