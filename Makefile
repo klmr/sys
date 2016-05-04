@@ -29,12 +29,18 @@ README.md: README.rmd ${module_files}
 show-help:
 	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
 	@echo
-	@sed -n "/^## / { \
+	@sed -n -e "/^## / { \
 		h; \
+		s/.*//; \
+		:doc" \
+	-e "H; \
 		n; \
-		s/:.*//; \
+		s/^## //; \
+		t doc" \
+	-e "s/:.*//; \
 		G; \
 		s/\\n## /---/; \
+		s/\\n/ /g; \
 		p; \
 	}" ${MAKEFILE_LIST} \
 	| LC_ALL='C' sort --ignore-case \
