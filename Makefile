@@ -59,7 +59,7 @@ show-help:
 	}" ${MAKEFILE_LIST} \
 	| LC_ALL='C' sort --ignore-case \
 	| awk -F '---' \
-		-v ncol=$$COLUMNS \
+		-v ncol=$$(tput cols) \
 		-v indent=29 \
 		-v col_on="$$(tput setaf 6)" \
 		-v col_off="$$(tput sgr0)" \
