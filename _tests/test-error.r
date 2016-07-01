@@ -5,7 +5,7 @@ test_that('wrong arguments cause errors', {
                 shows_error('filename'))
 
     expect_that(xc('foo', arg('filename', 'the input file')),
-                not(shows_error('filename')))
+                shows_no_error('filename'))
 
     expect_that(xc('--extra', arg('filename', 'the input file')),
                 shows_error('--extra'))
