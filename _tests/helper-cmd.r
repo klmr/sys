@@ -35,6 +35,16 @@ shows_error = function (...) {
     }
 }
 
+shows_no_error = function (...) {
+    args = unlist(list(...))
+
+    function (x) {
+        expect (! (inherits(x, 'try-error') &&
+                   inherits(attr(x, 'condition'), 'sys$cmd$error')),
+                'used wrong arguments')
+    }
+}
+
 #' Assert that a command line parse call results in a given argument definition
 #' list
 #'
