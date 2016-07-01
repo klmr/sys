@@ -4,10 +4,10 @@ sink() # To show tests, since we’re never calling `sys$run`.
 #' Assert that a command line parse call shows the help
 shows_help = function ()
     function (x)
-        expectation(inherits(x, 'try-error') &&
-                    inherits(attr(x, 'condition'), 'sys$cmd$help') &&
-                    ! inherits(attr(x, 'condition'), 'sys$cmd$error'),
-                    'does not show help', 'shows help')
+        expect(inherits(x, 'try-error') &&
+               inherits(attr(x, 'condition'), 'sys$cmd$help') &&
+               ! inherits(attr(x, 'condition'), 'sys$cmd$error'),
+               'does not show help', 'shows help')
 
 #' Assert that a command line parse call shows an error
 #'
@@ -24,14 +24,14 @@ shows_error = function (...) {
                                   perl = TRUE)
 
             as_expected = all(args_present)
-            expectation(as_expected,
-                        sprintf('argument(s) %s not used incorrectly',
-                                paste(sQuote(args[! args_present]),
-                                      collapse = ', ')),
-                        'used wrong arguments')
+            expect(as_expected,
+                   sprintf('argument(s) %s not used incorrectly',
+                           paste(sQuote(args[! args_present]),
+                                 collapse = ', ')),
+                   'used wrong arguments')
         }
         else
-            expectation(FALSE, 'did not use wrong arguments', '')
+            expect(FALSE, 'did not use wrong arguments', '')
     }
 }
 
@@ -44,9 +44,9 @@ args_equal = function (...) {
     function (actual) {
         na = sort(names(actual))
         ne = sort(names(expected))
-        expectation(identical(na, ne) &&
-                    identical(actual[na], expected[ne]),
-                    'arguments are not equal', 'arguments are equal')
+        expect(identical(na, ne) &&
+               identical(actual[na], expected[ne]),
+               'arguments are not equal', 'arguments are equal')
     }
 }
 
