@@ -9,6 +9,13 @@ shows_help = function ()
                ! inherits(attr(x, 'condition'), 'sys$cmd$error'),
                'does not show help', 'shows help')
 
+shows_no_help = function ()
+    function (x)
+        expect(! (inherits(x, 'try-error') &&
+                  inherits(attr(x, 'condition'), 'sys$cmd$help') &&
+                  ! inherits(attr(x, 'condition'), 'sys$cmd$error')),
+               'shows help', 'does not show help')
+
 #' Assert that a command line parse call shows an error
 #'
 #' @param ... exact names of the arguments that should show up in the error
