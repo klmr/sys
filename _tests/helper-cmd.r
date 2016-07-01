@@ -59,5 +59,9 @@ args_equal = function (...) {
 #' \code{try-error} object.
 xc = function (args, ...) {
     call = `[[<-`(match.call(), 1, quote(cmd$parse))
-    try(eval.parent(call), silent = TRUE)
+    result = try(eval.parent(call), silent = TRUE)
+    if (inherits(result, 'try-error') &&
+        inherits(attr(result, 'condition'), 'simpleError'))
+        stop(result)
+    result
 }
