@@ -42,3 +42,17 @@ repr.default = function (x, sep = ', ') {
 
 repr.numeric = function (x, sep = ', ')
     paste(format(x, trim = TRUE), collapse = sep)
+
+repr.logical = function (x, sep = ', ')
+    paste(format(x, trim = TRUE), collapse = sep)
+
+repr.list = function (x, sep = ', ')
+    paste(vapply(x, repr, character(1), sep = sep), collapse = sep)
+
+repr.name = function (x, sep = ', ')
+    paste(vapply(x, deparse, character(1), backtick = TRUE), collapse = sep)
+
+repr.call = function (x, sep = ', ')
+    paste(capture.output(print(x)), collapse = '\n')
+
+`repr.{` = repr.if = repr.for = repr.while = repr.call
