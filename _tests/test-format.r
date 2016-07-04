@@ -19,6 +19,6 @@ test_that('dispatch to `format` happens appropriately', {
 
 test_that('dispatch to `print` happens appropriately', {
     model = lm(speed ~ dist, cars)
-    expect_that(repr(model),
-                equals(paste(capture.output(print(model)), collapse = '\n')))
+    expected = paste(capture.output(model), collapse = '\n')
+    expect_that(repr(model), equals(expected))
 })
