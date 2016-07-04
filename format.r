@@ -15,7 +15,10 @@
 #' gives preference to \code{format} if both are defined.
 #' Finally, it will ensure that the output consists of a single character
 #' string; this may require pasting the formatted output, using \code{sep}.
-repr = function (x, sep = ', ') {
+repr = function (x, sep = ', ')
+    UseMethod('repr')
+
+repr.default = function (x, sep = ', ') {
     get_method = function (generic, class)
         try(getS3method(generic, class), silent = TRUE)
 
@@ -36,3 +39,6 @@ repr = function (x, sep = ', ') {
 
     paste(result, collapse = sep)
 }
+
+repr.numeric = function (x, sep = ', ')
+    paste(format(x, trim = TRUE), collapse = sep)
