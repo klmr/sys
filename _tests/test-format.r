@@ -32,6 +32,19 @@ test_that('logical values are formatted correctly', {
     expect_that(repr(c(TRUE, FALSE)), equals('TRUE, FALSE'))
 })
 
+test_that('language objects are formatted correctly', {
+    expect_that(repr(quote(x)), equals('x'))
+    expect_that(repr(quote('x')), equals('x'))
+    expect_that(repr(quote(1 + x)), equals('1 + x'))
+    # `deparse` handles the following wrong …
+    expect_that(repr(quote(`a b`)), equals('`a b`'))
+    # … but this correctly:
+    expect_that(repr(quote(1 + ` `)), equals('1 + ` `'))
+
+    expect_that(repr(quote(~ x)), equals('~x'))
+    expect_that(repr(quote(a ~ b)), equals('a ~ b'))
+})
+
 test_that('dispatch to `format` happens appropriately', {
     time_chr = '1973-11-29 21:33:09'
     time = as.POSIXct(time_chr)
