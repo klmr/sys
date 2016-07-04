@@ -12,7 +12,7 @@
 #' @details
 #' \code{repr} will dispatch formatting to either the \code{format} or
 #' \code{print} generic, depending on which is specialized for the object. It
-#' gives preference to \code{print}.
+#' gives preference to \code{format} if both are defined.
 #' Finally, it will ensure that the output consists of a single character
 #' string; this may require pasting the formatted output, using \code{sep}.
 repr = function (x, sep = ', ') {
@@ -21,11 +21,18 @@ repr = function (x, sep = ', ') {
 
     is_not_error = function (x) ! inherits(x, 'try-error')
 
-    print = Find(is_not_error,
-                  lapply(class(x), get_method, generic = 'print'))
+    find_method = function (generic, classes)
+        Find(is_not_error, lapply(classes, get_method, generic = generic))
 
-    if(is.null(print))
-        paste(format(x), collapse = sep)
+    print_ = find_method('print', class(x))
+    format_ = find_method('format', class(x))
+
+    result = if(! is.null(format_))
+        format_(x)
+    else if (! is.null(print_))
+        paste(capture.output(print_(x)), collapse = '\n')
     else
-        paste(capture.output(print(x)), collapse = '\n')
+        format(x)
+
+    paste(result, collapse = sep)
 }
