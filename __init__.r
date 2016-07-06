@@ -47,6 +47,8 @@ exit = function (code = 0, msg) {
     quit(save = 'no', status = if (is.null(code)) 0 else code)
 }
 
+format = modules::import('./format')
+
 #' Print a message
 #'
 #' \code{print} outputs a message consisting of several fragments.
@@ -54,8 +56,10 @@ exit = function (code = 0, msg) {
 #' @param file a connection or character string specifying a file name or a pipe
 #'  (see \code{\link{cat}} for details)
 #' @param nl logical; if \code{TRUE}, append a newline character
-print = function (..., file = stdout(), nl = TRUE)
-    cat(..., if(nl) '\n', file = file, sep = '')
+print = function (..., file = stdout(), nl = TRUE) {
+    args_s = unlist(lapply(list(...), format$repr))
+    cat(args_s, if(nl) '\n', file = file, sep = '')
+}
 
 #' \code{printf} outputs a formatted message.
 #' @param format a format string that is passed to \code{\link{sprintf}}
