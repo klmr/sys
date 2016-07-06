@@ -36,6 +36,7 @@ test_that('language objects are formatted correctly', {
     expect_that(repr(quote(x)), equals('x'))
     expect_that(repr(quote('x')), equals('x'))
     expect_that(repr(quote(1 + x)), equals('1 + x'))
+    expect_that(repr(quote(1 + 'x')), equals('1 + "x"'))
     expect_that(repr(c(quote(a), quote(b))), equals('a, b'))
     expect_that(repr(quote({x})), equals('{\n    x\n}'))
     expect_that(repr(quote(expr = )), equals(''))
