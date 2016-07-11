@@ -366,7 +366,8 @@ arg = function (name, description, default, arity = 1, validate, transform) {
         if (! validate(option, value))
             stop(sprintf('Value %s invalid for argument %s',
                          sQuote(value), sQuote(readable_name(option))))
-        result[[option$name]] <<- transform(option, value)
+        result[[option$name]] <<- append(result[[option$name]],
+                                         transform(option, value))
     }
 
     readable_name = function (opt) {
@@ -421,11 +422,16 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                 else {
                     if (attr(match, 'capture.length')[, 'eq'] == 0) {
                         current_option = option
+                        expected_args = option$arity
                         state = VALUE
                     }
                     else {
                         value = .reggroup(match, token, 'value')
                         store_result(option, value)
+                        if ((expected_args = option$arity - 1) != 0) {
+                            current_option = option
+                            state = VALUE
+                        }
                     }
                 }
             }
@@ -453,10 +459,16 @@ arg = function (name, description, default, arity = 1, validate, transform) {
 
                     if (value == '') {
                         current_option = option
+                        expected_args = option$arity
                         state = VALUE
                     }
-                    else
+                    else {
                         store_result(option, value)
+                        if ((expected_args = option$arity - 1) != 0) {
+                            current_option = option
+                            state = VALUE
+                        }
+                    }
 
                     short_opt_pos = 1
                 }
@@ -469,7 +481,8 @@ arg = function (name, description, default, arity = 1, validate, transform) {
         }
         else if (state == VALUE) {
             store_result(current_option, token)
-            state = DEFAULT
+            if ((expected_args = expected_args - 1) == 0)
+                state = DEFAULT
         }
         else if (state == TRAILING) {
             check_positional_arg_valid()
