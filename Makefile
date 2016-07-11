@@ -5,9 +5,9 @@ all: test documentation README.md
 module_files = __init__.r cmd.r
 
 .PHONY: test
-## Run unit tests
+## Run unit tests. `make test=abc` will only run test case(s) “abc”
 test: ${module_files}
-	Rscript __init__.r
+	Rscript __init__.r ${testcases}
 
 .PHONY: documentation
 ## Build HTML documentation
@@ -22,7 +22,13 @@ README.md: README.rmd ${module_files}
 %.html: %.rmd
 	Rscript -e 'knitr::knit2html("$<")'
 
-.DEFAULT_GOAL := show-help
+.DEFAULT_GOAL := maybe-show-help
+
+.PHONY: maybe-show-help
+maybe-show-help:
+	@test "${test}" != '' && \
+		(${MAKE} test testcases=${test}; exit 0) || \
+		${MAKE} show-help
 
 # Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
 # sed script explained:
