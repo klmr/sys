@@ -393,13 +393,13 @@ arg = function (name, description, default, arity = 1, validate, transform) {
         token = args[i]
         i = i + 1
         if (state == DEFAULT) {
-            if (token == '--')
+            if (token == '--') {
                 state = TRAILING
-            else if (token == '--help' || token == '-h')
+            } else if (token == '--help' || token == '-h') {
                 return('help')
-            else if (token == '--version')
+            } else if (token == '--version') {
                 return('version')
-            else if (grepl('^--', token)) {
+            } else if (grepl('^--', token)) {
                 match = regexpr(long_option_pattern, token, perl = TRUE)
                 if (match == -1)
                     stop(sprintf('Invalid token %s, expected long argument',
@@ -418,14 +418,12 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                                      sQuote(paste0('--', name))))
 
                     result[[option$name]] = ! option$default
-                }
-                else {
+                } else {
                     if (attr(match, 'capture.length')[, 'eq'] == 0) {
                         current_option = option
                         expected_args = option$arity
                         state = VALUE
-                    }
-                    else {
+                    } else {
                         value = .reggroup(match, token, 'value')
                         store_result(option, value)
                         if ((expected_args = option$arity - 1) != 0) {
@@ -434,8 +432,7 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                         }
                     }
                 }
-            }
-            else if (grepl('^-', token)) {
+            } else if (grepl('^-', token)) {
                 name = substr(token, short_opt_pos + 1, short_opt_pos + 1)
                 option = opts_short[[name]]
 
@@ -450,19 +447,16 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                         # Consume next short option in current token next.
                         i = i - 1
                         short_opt_pos = short_opt_pos + 1
-                    }
-                    else
+                    } else
                         short_opt_pos = 1
-                }
-                else {
+                } else {
                     value = substr(token, short_opt_pos + 2, nchar(token))
 
                     if (value == '') {
                         current_option = option
                         expected_args = option$arity
                         state = VALUE
-                    }
-                    else {
+                    } else {
                         store_result(option, value)
                         if ((expected_args = option$arity - 1) != 0) {
                             current_option = option
@@ -472,19 +466,16 @@ arg = function (name, description, default, arity = 1, validate, transform) {
 
                     short_opt_pos = 1
                 }
-            }
-            else {
+            } else {
                 check_positional_arg_valid()
                 store_result(positional[[arg_pos]], token)
                 arg_pos = arg_pos + 1
             }
-        }
-        else if (state == VALUE) {
+        } else if (state == VALUE) {
             store_result(current_option, token)
             if ((expected_args = expected_args - 1) == 0)
                 state = DEFAULT
-        }
-        else if (state == TRAILING) {
+        } else if (state == TRAILING) {
             check_positional_arg_valid()
             store_result(positional[[arg_pos]], token)
             arg_pos = arg_pos + 1
