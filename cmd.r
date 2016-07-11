@@ -1,4 +1,4 @@
-.sys = modules::import('../sys')
+.sys = modules::import('.')
 
 #' Parse the command line arguments
 #'
