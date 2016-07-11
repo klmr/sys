@@ -108,16 +108,13 @@ optdef = cmd$opt('t', 'test', 'test option', arity = '*')
 
 test_that('arguments can have arbitrary arity > 0', {
     test_that(xc('foo', argdef), args_equal(test = 'foo'))
-    expect_that(xc(character(0), argdef),
-                shows_error('insufficient arguments for “test”'))
+    expect_that(xc(character(0), argdef), shows_error('test'))
 })
 
 test_that('options can have arbitrary arity > 0', {
     test_that(xc('--test=foo', argdef), args_equal(test = 'foo'))
-    expect_that(xc('--test', argdef),
-                shows_error('insufficient arguments for “--test”'))
+    expect_that(xc('--test', argdef), shows_error('--test'))
 
     test_that(xc('-tfoo', argdef), args_equal(test = 'foo'))
-    expect_that(xc('-t', argdef),
-                shows_error('insufficient arguments for “--test”'))
+    expect_that(xc('-t', argdef), shows_error('--test'))
 })
