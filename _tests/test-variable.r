@@ -6,10 +6,8 @@ optdef = cmd$opt('t', 'test', 'test option', arity = 3)
 test_that('arguments can have arity >1', {
     expect_that(xc(c('foo', 'bar', 'baz'), argdef),
                 args_equal(test = c('foo', 'bar', 'baz')))
-    expect_that(xc('foo', argdef),
-                shows_error('insufficient arguments for “test”'))
-    expect_that(xc(c('a', 'b', 'c', 'd'), argdef),
-                shows_error('too many arguments for “test”'))
+    expect_that(xc('foo', argdef), shows_error('test'))
+    expect_that(xc(c('a', 'b', 'c', 'd'), argdef), shows_error())
 })
 
 test_that('long options can have arity > 1', {
@@ -17,10 +15,8 @@ test_that('long options can have arity > 1', {
                 args_equal(test = c('foo', 'bar', 'baz')))
     expect_that(xc(c('--test=foo', 'bar', 'baz'), optdef),
                 args_equal(test = c('foo', 'bar', 'baz')))
-    expect_that(xc(c('--test', 'foo'), optdef),
-                shows_error('insufficient arguments for “test”'))
-    expect_that(xc(c('--test', 'a', 'b', 'c', 'd'), optdef),
-                shows_error('too many arguments for “test”'))
+    expect_that(xc(c('--test', 'foo'), optdef), shows_error('--test'))
+    expect_that(xc(c('--test', 'a', 'b', 'c', 'd'), optdef), shows_error())
 })
 
 test_that('short options can have arity > 1', {
@@ -28,10 +24,8 @@ test_that('short options can have arity > 1', {
                 args_equal(test = c('foo', 'bar', 'baz')))
     expect_that(xc(c('-tfoo', 'bar', 'baz'), optdef),
                 args_equal(test = c('foo', 'bar', 'baz')))
-    expect_that(xc(c('-t', 'foo'), optdef),
-                shows_error('insufficient arguments for “--test”'))
-    expect_that(xc(c('-ta', 'b', 'c', 'd'), optdef),
-                shows_error('too many arguments for “test”'))
+    expect_that(xc(c('-t', 'foo'), optdef), shows_error('--test'))
+    expect_that(xc(c('-ta', 'b', 'c', 'd'), optdef), shows_error())
 })
 
 argdef = cmd$arg('test', 'test argument', arity = '*', default = 'x')
