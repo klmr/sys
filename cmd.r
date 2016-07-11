@@ -43,8 +43,9 @@
 parse = function (..., args) {
     if (missing(args))
         args = .sys$args
-    args_definition = lapply(.substitute_args(match.call(expand.dots = FALSE)$...,
-                                              list(opt = opt, arg = arg)), eval)
+    args_def_list = .substitute_args(match.call(expand.dots = FALSE)$...,
+                                     list(opt = opt, arg = arg))
+    args_definition = lapply(args_def_list, eval, envir = parent.frame())
 
     stopifnot(length(args_definition) > 0)
     stopifnot(all(sapply(args_definition, inherits, 'sys$cmd$token')))
@@ -233,7 +234,7 @@ arg = function (name, description, default, validate, transform) {
 
 .substitute_args = function (expr, env) {
     replace_names = function (expr) {
-        if (is.name(expr[[1]])) {
+        if (! is.name(expr) && is.name(expr[[1]])) {
             name = as.character(expr[[1]])
             if (name %in% names(env))
                 expr[[1]] = env[[name]]
@@ -242,7 +243,7 @@ arg = function (name, description, default, validate, transform) {
         expr
     }
 
-    as.call(lapply(expr, replace_names))
+    lapply(expr, replace_names)
 }
 
 .make_opt = function (prefix, name)
