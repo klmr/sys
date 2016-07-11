@@ -388,6 +388,7 @@ arg = function (name, description, default, arity = 1, validate, transform) {
     result = list()
     arg_pos = 1
     short_opt_pos = 1
+    expected_args = 1
 
     while (i <= length(args)) {
         token = args[i]
@@ -481,6 +482,10 @@ arg = function (name, description, default, arity = 1, validate, transform) {
             arg_pos = arg_pos + 1
         }
     }
+
+    if (expected_args != 0)
+        stop(sprintf('insufficient values for %s',
+                     sQuote(readable_name(current_option))))
 
     # Set optional arguments, if not given.
 
