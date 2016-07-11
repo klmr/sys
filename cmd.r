@@ -172,13 +172,18 @@ version = function ()
 #' # Create a toggle to enable verbose logging, and disable it by default.
 #' opt('v', 'verbose', 'enable verbose logging', FALSE)
 #' @rdname arguments
-opt = function (short, long, description, default, validate, transform) {
+opt = function (short, long, description, default, arity = 1, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
     stopifnot(short != '' || long != '')
     stopifnot(short == '' || nchar(short) == 1)
     stopifnot(is.character(description) && length(description) == 1)
     stopifnot(missing(default) || length(default) <= 1)
+    stopifnot(length(arity) == 1,
+              is.numeric(arity) && arity > 0 || arity == '*')
+
+    if (! missing(default) && is.logical(default) && arity != 1)
+        stop('an option flag cannot have arity ≠ 1')
 
     optional = ! missing(default)
     name = if (long == '') short else long
@@ -222,9 +227,11 @@ opt = function (short, long, description, default, validate, transform) {
 #' arg('output_file', 'the output filename', default = '<STDOUT>',
 #'     transform = function (x) if (x == '<STDOUT>') stdout() else file(x, 'w'))
 #' @rdname arguments
-arg = function (name, description, default, validate, transform) {
-    force(name)
-    force(description)
+arg = function (name, description, default, arity = 1, validate, transform) {
+    stopifnot(is.character(name) && length(name) == 1)
+    stopifnot(is.character(description) && length(description) == 1)
+    stopifnot(length(arity) == 1,
+              is.numeric(arity) && arity > 0 || arity == '*')
     optional = ! missing(default)
     .expect_unary_function(validate)
     .expect_unary_function(transform)
