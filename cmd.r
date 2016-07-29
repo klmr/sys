@@ -333,7 +333,7 @@ arg = function (name, description, default, validate, transform) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
             trunc = if (nchar(token) > 20)
-                paste0(substr(token, 19), '…')
+                paste0(strtrim(token, 19), '…')
             else
                 token
             stop(sprintf('Unexpected positional argument %s', sQuote(trunc)))
