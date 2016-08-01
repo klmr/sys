@@ -332,7 +332,7 @@ arg = function (name, description, default, validate, transform) {
 .parse = function (args, options, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
-            trunc = if (nchar(token) > 20)
+            trunc = if (nchar(token, type = 'width') > 20)
                 paste0(strtrim(token, 19), '…')
             else
                 token
