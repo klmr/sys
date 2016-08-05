@@ -18,7 +18,8 @@ description = function () {
     if (! grepl('^\\[1\\] ".*"$', .script_output[[1]]))
         return(NULL)
 
-    sub('^\\[1\\] "(.*)"$', '\\1', .script_output[[1]])
+    eval(parse(text = sub('^\\[1\\] ', '', .script_output[[1]])),
+         envir = new.env(parent = emptyenv()))
 }
 
 # The environment that is calling `import(sys)`
