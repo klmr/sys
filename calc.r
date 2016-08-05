@@ -2,7 +2,14 @@
 
 sys = modules::import('sys')
 
-"A simple mathematical expression evaluator"
+"
+🔢  A simple mathematical expression evaluator 📐
+
+Its features
+
+1. evaluation of raw R expressions via `eval`
+2. print overly verbose descriptions
+"
 VERSION = '1.0'
 
 sys$run({
