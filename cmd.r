@@ -388,7 +388,7 @@ arg = function (name, description, default, arity = 1, validate, transform) {
     result = list()
     arg_pos = 1
     short_opt_pos = 1
-    expected_args = 1
+    expected_args = 0
 
     while (i <= length(args)) {
         token = args[i]
