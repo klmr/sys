@@ -473,10 +473,11 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                 }
             } else {
                 check_positional_arg_valid()
-                store_result(positional[[arg_pos]], token)
+                current_option = positional[[arg_pos]]
+                store_result(current_option, token)
 
-                if (is.numeric(options[[arg_pos]]$arity)) {
-                    expected_args = options[[arg_pos]]$arity -
+                if (is.numeric(positional[[arg_pos]]$arity)) {
+                    expected_args = positional[[arg_pos]]$arity -
                                     length(result[[arg_pos]])
                 } else {
                     if (i <= length(args))
@@ -494,10 +495,11 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                 state = DEFAULT
         } else if (state == TRAILING) {
             check_positional_arg_valid()
-            store_result(positional[[arg_pos]], token)
+            current_option = positional[[arg_pos]]
+            store_result(current_option, token)
 
-            if (is.numeric(options[[arg_pos]]$arity)) {
-                expected_args = options[[arg_pos]]$arity -
+            if (is.numeric(positional[[arg_pos]]$arity)) {
+                expected_args = positional[[arg_pos]]$arity -
                                 length(result[[arg_pos]])
             } else {
                 if (i <= length(args))
