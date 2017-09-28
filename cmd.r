@@ -389,6 +389,8 @@ arg = function (name, description, default, arity = 1, validate, transform) {
     arg_pos = 1
     short_opt_pos = 1
     expected_args = 1
+    if (length(args) == 0)
+        expected_args = 0
 
     while (i <= length(args)) {
         token = args[i]
@@ -419,6 +421,7 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                                      sQuote(paste0('--', name))))
 
                     result[[option$name]] = ! option$default
+                    expected_args = 0
                 } else {
                     if (attr(match, 'capture.length')[, 'eq'] == 0) {
                         current_option = option
@@ -443,6 +446,7 @@ arg = function (name, description, default, arity = 1, validate, transform) {
 
                 if (is.logical(option$default)) {
                     result[[option$name]] = ! option$default
+                    expected_args = 0
 
                     if (nchar(token) > short_opt_pos + 1) {
                         # Consume next short option in current token next.
@@ -469,8 +473,21 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                 }
             } else {
                 check_positional_arg_valid()
-                store_result(positional[[arg_pos]], token)
-                arg_pos = arg_pos + 1
+                current_option = positional[[arg_pos]]
+                store_result(current_option, token)
+
+                if (is.numeric(positional[[arg_pos]]$arity)) {
+                    expected_args = positional[[arg_pos]]$arity -
+                                    length(result[[arg_pos]])
+                } else {
+                    if (i <= length(args))
+                        expected_args = 1
+                    else
+                        expected_args = 0
+                }
+
+                if (expected_args == 0)
+                    arg_pos = arg_pos + 1
             }
         } else if (state == VALUE) {
             store_result(current_option, token)
@@ -478,8 +495,21 @@ arg = function (name, description, default, arity = 1, validate, transform) {
                 state = DEFAULT
         } else if (state == TRAILING) {
             check_positional_arg_valid()
-            store_result(positional[[arg_pos]], token)
-            arg_pos = arg_pos + 1
+            current_option = positional[[arg_pos]]
+            store_result(current_option, token)
+
+            if (is.numeric(positional[[arg_pos]]$arity)) {
+                expected_args = positional[[arg_pos]]$arity -
+                                length(result[[arg_pos]])
+            } else {
+                if (i <= length(args))
+                    expected_args = 1
+                else
+                    expected_args = 0
+            }
+
+            if (expected_args == 0)
+                arg_pos = arg_pos + 1
         }
     }
 
