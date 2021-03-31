@@ -15,6 +15,7 @@
 #' gives preference to \code{format} if both are defined.
 #' Finally, it will ensure that the output consists of a single character
 #' string; this may require pasting the formatted output, using \code{sep}.
+#' @export
 repr = function (x, sep = ', ')
     UseMethod('repr')
 

@@ -1,4 +1,4 @@
-.sys = modules::import('../sys')
+box::use(../sys)
 
 #' Parse the command line arguments
 #'
@@ -25,7 +25,7 @@
 #' normal usage, this argument is omitted.
 #'
 #' @examples
-#' sys = import('sys')
+#' box::use(klmr/sys)
 #' \dontrun{
 #' # Use command line provided by `sys$args`
 #' args = sys$cmd$parse(sys$cmd$arg('file', 'the input file'))
@@ -40,10 +40,12 @@
 #'               arg('file', 'the input file'),
 #'               args = c('-v', 'foo.txt'))
 #' @seealso \code{opt}, \code{arg}
+#' @export
 parse = function (..., args) {
+    box::use(stats[setNames])
     if (missing(args))
-        args = .sys$args
-    args_definition = lapply(.substitute_args(match.call(expand.dots = FALSE)$...,
+        args = sys$args
+    args_definition = lapply(substitute_args(match.call(expand.dots = FALSE)$...,
                                               list(opt = opt, arg = arg)), eval)
 
     stopifnot(length(args_definition) > 0)
@@ -65,16 +67,16 @@ parse = function (..., args) {
 
     # Parse and validate arguments.
 
-    result = try(.parse(args, args_definition, opts_long, opts_short,
-                        positional), silent = TRUE)
+    result = try(parse_impl(args, args_definition, opts_long, opts_short,
+                            positional), silent = TRUE)
     if (inherits(result, 'try-error')) {
         message = conditionMessage(attr(result, 'condition'))
-        stop(.sys_error(message, args_definition))
+        stop(sys_error(message, args_definition))
     }
     else if (identical(result, 'help'))
-        stop(.sys_help(args_definition))
+        stop(sys_help(args_definition))
     else if (identical(result, 'version'))
-        stop(.sys_version())
+        stop(sys_version())
     else
         result
 }
@@ -89,13 +91,13 @@ help = function (options) {
     is = function (cls) function (x) inherits(x, cls)
     args = Filter(is('sys$cmd$arg'), options)
     opts = Filter(is('sys$cmd$opt'), options)
-    arg_help = paste(sapply(args, .option_description), collapse = '\n')
-    opt_help = paste(sapply(opts, .option_description), collapse = '\n')
+    arg_help = paste(sapply(args, option_description), collapse = '\n')
+    opt_help = paste(sapply(opts, option_description), collapse = '\n')
 
-    description = .sys$description()
-    version = sprintf(' (version %s)', .sys$version())
+    description = sys$description()
+    version = sprintf(' (version %s)', sys$version())
     if (length(description) > 0)
-        description = c(strwrap(paste0(description, version), .termwidth()), '')
+        description = c(strwrap(paste0(description, version), termwidth()), '')
 
     opt_section = function (title, items)
         if (nzchar(items)) c('', title, items) else NULL
@@ -109,16 +111,16 @@ help = function (options) {
 #' options.
 #' @rdname help
 usage = function (options) {
-    cmd = paste(.sys$script_name,
-                paste(sapply(options, .option_syntax), collapse = ' '))
-    usage = strwrap(cmd, .termwidth(), prefix = '       ', initial = 'Usage: ')
+    cmd = paste(sys$script_name,
+                paste(sapply(options, option_syntax), collapse = ' '))
+    usage = strwrap(cmd, termwidth(), prefix = '       ', initial = 'Usage: ')
     paste(usage, collapse = '\n')
 }
 
 #' \code{version} returns the version string, if provided; otherwise \code{""}.
 #' @rdname help
 version = function ()
-    .sys$version()
+    sys$version()
 
 #' Create a command line argument
 #'
@@ -171,6 +173,7 @@ version = function ()
 #' # Create a toggle to enable verbose logging, and disable it by default.
 #' opt('v', 'verbose', 'enable verbose logging', FALSE)
 #' @rdname arguments
+#' @export
 opt = function (short, long, description, default, validate, transform) {
     stopifnot(is.character(short) && length(short) == 1)
     stopifnot(is.character(long) && length(long) == 1)
@@ -182,8 +185,8 @@ opt = function (short, long, description, default, validate, transform) {
     optional = ! missing(default)
     name = if (long == '') short else long
 
-    .expect_unary_function(validate)
-    .expect_unary_function(transform)
+    expect_unary_function(validate)
+    expect_unary_function(transform)
     structure(as.list(environment()),
               class = c('sys$cmd$opt', 'sys$cmd$token'))
 }
@@ -221,17 +224,18 @@ opt = function (short, long, description, default, validate, transform) {
 #' arg('output_file', 'the output filename', default = '<STDOUT>',
 #'     transform = function (x) if (x == '<STDOUT>') stdout() else file(x, 'w'))
 #' @rdname arguments
+#' @export
 arg = function (name, description, default, validate, transform) {
     force(name)
     force(description)
     optional = ! missing(default)
-    .expect_unary_function(validate)
-    .expect_unary_function(transform)
+    expect_unary_function(validate)
+    expect_unary_function(transform)
     structure(as.list(environment()),
               class = c('sys$cmd$arg', 'sys$cmd$token'))
 }
 
-.substitute_args = function (expr, env) {
+substitute_args = function (expr, env) {
     replace_names = function (expr) {
         if (is.name(expr[[1]])) {
             name = as.character(expr[[1]])
@@ -245,17 +249,17 @@ arg = function (name, description, default, validate, transform) {
     as.call(lapply(expr, replace_names))
 }
 
-.make_opt = function (prefix, name)
+make_opt = function (prefix, name)
     if (name == '') NULL else paste0(prefix, name)
 
-.option_usage = function (option)
-    UseMethod('.option_usage')
+option_usage = function (option)
+    UseMethod('option_usage')
 
-`.option_usage.sys$cmd$opt` = function (option) {
-    usage = .make_opt('--', option$long)
+`option_usage.sys$cmd$opt` = function (option) {
+    usage = make_opt('--', option$long)
     use_short = is.null(usage)
     if (use_short)
-        usage = .make_opt('-', option$short)
+        usage = make_opt('-', option$short)
 
     if (! (option$optional && inherits(option$default, 'logical')))
         paste(usage, toupper(option$name), sep = if (use_short) ' ' else '=')
@@ -263,11 +267,11 @@ arg = function (name, description, default, validate, transform) {
         usage
 }
 
-`.option_usage.sys$cmd$arg` = function (option)
+`option_usage.sys$cmd$arg` = function (option)
     option$name
 
-.option_syntax = function (option) {
-    usage = .option_usage(option)
+option_syntax = function (option) {
+    usage = option_usage(option)
 
     if (option$optional)
         paste0('[', usage, ']')
@@ -275,35 +279,35 @@ arg = function (name, description, default, validate, transform) {
         usage
 }
 
-.option_name = function (option)
-    UseMethod('.option_name')
+option_name = function (option)
+    UseMethod('option_name')
 
-`.option_name.sys$cmd$opt` = function (option) {
+`option_name.sys$cmd$opt` = function (option) {
     nonnull = function (x) if (is.null(x)) '' else x
-    short_opt_name = nonnull(.make_opt('-', option$short))
-    long_opt_name = nonnull(.make_opt('--', option$long))
+    short_opt_name = nonnull(make_opt('-', option$short))
+    long_opt_name = nonnull(make_opt('--', option$long))
 
     sep = if(nzchar(short_opt_name) && nzchar(long_opt_name)) ', ' else '  '
     sprintf('% 4s%s%s', short_opt_name, sep, long_opt_name)
 }
 
-`.option_name.sys$cmd$arg` = function (option)
+`option_name.sys$cmd$arg` = function (option)
     sprintf('  %s', option$name)
 
-.option_description = function (option) {
-    name = .option_name(option)
+option_description = function (option) {
+    name = option_name(option)
     description = option$description
     if (option$optional)
         description = paste(description,
                             sprintf('(default: %s)', deparse(option$default)))
     paste(strwrap(description,
-                  width = .termwidth(),
+                  width = termwidth(),
                   exdent = 21,
                   initial = sprintf('% -20s ', name)),
           collapse = '\n')
 }
 
-.termwidth = function () {
+termwidth = function () {
     stty_size = suppressWarnings(try(system('stty size', intern = TRUE,
                                             ignore.stderr = TRUE),
                                      silent = TRUE))
@@ -314,22 +318,22 @@ arg = function (name, description, default, validate, transform) {
     as.integer(Sys.getenv('COLUMNS', getOption('width', 78)))
 }
 
-.sys_error = function (message, options) {
+sys_error = function (message, options) {
     structure(list(message = message, call = call('parse', options)),
               class = c('sys$cmd$error', 'sys$cmd$help', 'error', 'condition'))
 }
 
-.sys_help = function (options) {
+sys_help = function (options) {
     structure(list(message = 'help', call = call('parse', options)),
               class = c('sys$cmd$help', 'error', 'condition'))
 }
 
-.sys_version = function () {
+sys_version = function () {
     structure(list(message = 'version', call = call('parse', options)),
               class = c('sys$cmd$version', 'sys$cmd$help', 'error', 'condition'))
 }
 
-.parse = function (args, options, opts_long, opts_short, positional) {
+parse_impl = function (args, options, opts_long, opts_short, positional) {
     check_positional_arg_valid = function ()
         if (arg_pos > length(positional)) {
             trunc = if (nchar(token, type = 'width') > 20)
@@ -395,7 +399,7 @@ arg = function (name, description, default, validate, transform) {
                 if (match == -1)
                     stop(sprintf('Invalid token %s, expected long argument',
                                  sQuote(token)))
-                name = .reggroup(match, token, 'name')
+                name = reggroup(match, token, 'name')
 
                 option = opts_long[[name]]
 
@@ -416,7 +420,7 @@ arg = function (name, description, default, validate, transform) {
                         state = VALUE
                     }
                     else {
-                        value = .reggroup(match, token, 'value')
+                        value = reggroup(match, token, 'value')
                         store_result(option, value)
                     }
                 }
@@ -499,7 +503,7 @@ arg = function (name, description, default, validate, transform) {
     result
 }
 
-.expect_unary_function = function (f) {
+expect_unary_function = function (f) {
     if (! missing(f))
         stopifnot(inherits(f, 'function') &&
                   length(formals(f)) > 0)
@@ -521,7 +525,7 @@ arg = function (name, description, default, validate, transform) {
                     x$description))
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmd$opt', `print.sys$cmd$opt`)
+box::register_S3_method('print', 'sys$cmd$opt', `print.sys$cmd$opt`)
 
 `print.sys$cmd$arg` = function (x, ...) {
     if (x$optional)
@@ -531,7 +535,7 @@ modules::register_S3_method('print', 'sys$cmd$opt', `print.sys$cmd$opt`)
         cat(sprintf("%s: %s\n", x$name, x$description))
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmd$arg', `print.sys$cmd$arg`)
+box::register_S3_method('print', 'sys$cmd$arg', `print.sys$cmd$arg`)
 
 `print.sys$cmd$error` = function (x, ...) {
     call = conditionCall(x)
@@ -542,7 +546,7 @@ modules::register_S3_method('print', 'sys$cmd$arg', `print.sys$cmd$arg`)
     cat(paste(usage(options), message, sep = '\n'), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmd$error', `print.sys$cmd$error`)
+box::register_S3_method('print', 'sys$cmd$error', `print.sys$cmd$error`)
 
 `print.sys$cmd$help` = function (x, ...) {
     call = conditionCall(x)
@@ -552,7 +556,7 @@ modules::register_S3_method('print', 'sys$cmd$error', `print.sys$cmd$error`)
     cat(help(options), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmd$help', `print.sys$cmd$help`)
+box::register_S3_method('print', 'sys$cmd$help', `print.sys$cmd$help`)
 
 `print.sys$cmd$version` = function (x, ...) {
     args = list(...)
@@ -560,9 +564,9 @@ modules::register_S3_method('print', 'sys$cmd$help', `print.sys$cmd$help`)
     cat(version(), '\n', file = file)
     invisible(x)
 }
-modules::register_S3_method('print', 'sys$cmd$version', `print.sys$cmd$version`)
+box::register_S3_method('print', 'sys$cmd$version', `print.sys$cmd$version`)
 
-.reggroup = function (match, string, group) {
+reggroup = function (match, string, group) {
     start = attr(match, 'capture.start')[, group]
     stop = attr(match, 'capture.length')[, group] + start - 1
 

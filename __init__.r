@@ -1,9 +1,11 @@
 #' The command line arguments
+#' @export
 args = commandArgs(trailingOnly = TRUE)
 
 #' The name of the script
 #'
 #' @note If the script was invoked interactively, this is the empty string.
+#' @export
 script_name = local({
     file = grep('^--file=', commandArgs(trailingOnly = FALSE), value = TRUE)
     sub('--file=', '', file)
@@ -12,6 +14,7 @@ script_name = local({
 #' The description of the script
 #'
 #' @return The description of the script, if provided, \code{NULL} otherwise.
+#' @export
 description = function () {
     if (length(.script_output) == 0)
         return(NULL)
@@ -21,33 +24,41 @@ description = function () {
     sub('^\\[1\\] "(.*)"$', '\\1', .script_output[[1]])
 }
 
-# The environment that is calling `import(sys)`
-.script_env = local({
-    n = 1
+.on_load = function (ns) {
+    # The environment that is importing `sys`.
+    # Hack; this only works if `sys` is first loaded from the command line
+    # script that uses it (which should normally be the case).
+    ns$script_env = local({
+        n = 1
 
-    while (isNamespace(topenv((env = parent.frame(n)))))
-        n = n + 1
-    env
-})
+        while (isNamespace(topenv((env = parent.frame(n)))))
+            n = n + 1
+        env
+    })
+}
 
 #' The version of the script
 #'
 #' @return The version of the script, if provided, \code{NULL} otherwise.
-version = function ()
-    mget('VERSION', .script_env, mode = 'character', ifnotfound = list(NULL),
+#' @export
+version = function () {
+    mget('VERSION', script_env, mode = 'character', ifnotfound = list(NULL),
          inherits = FALSE)[[1]]
+}
 
 #' Quit the program
 #'
 #' @param code numeric exit code (default: \code{0})
 #' @param msg message to be printed to the standard error (optional)
+#' @export
 exit = function (code = 0, msg) {
     if (! missing(msg))
         message(msg)
     quit(save = 'no', status = if (is.null(code)) 0 else code)
 }
 
-format = modules::import('./format')
+#' @export
+box::use(./format)
 
 #' Print a message
 #'
@@ -56,6 +67,7 @@ format = modules::import('./format')
 #' @param file a connection or character string specifying a file name or a pipe
 #'  (see \code{\link{cat}} for details)
 #' @param nl logical; if \code{TRUE}, append a newline character
+#' @export
 print = function (..., file = stdout(), nl = TRUE) {
     args_s = unlist(lapply(list(...), format$repr))
     cat(args_s, if(nl) '\n', file = file, sep = '')
@@ -64,6 +76,7 @@ print = function (..., file = stdout(), nl = TRUE) {
 #' \code{printf} outputs a formatted message.
 #' @param format a format string that is passed to \code{\link{sprintf}}
 #' @rdname print
+#' @export
 printf = function (format, ..., file = stdout(), nl = TRUE)
     print(sprintf(format, ...), file = file, nl = nl)
 
@@ -99,9 +112,10 @@ printf = function (format, ..., file = stdout(), nl = TRUE)
 #'     sys$exit(1, 'Optional message')
 #' })
 #' }
+#' @export
 run = function (entry_point = main) {
     caller = parent.frame()
-    caller_name = evalq(modules::module_name(), envir = caller)
+    caller_name = evalq(box::use(), envir = caller)
 
     if (interactive() || ! is.null(caller_name))
         return(invisible())
@@ -133,10 +147,11 @@ run = function (entry_point = main) {
         stop(error)
 }
 
-cmd = modules::import('./cmd')
+#' @export
+box::use(./cmd)
 
-if (is.null(modules::module_name())) {
-    modules::import('./_tests')
+if (is.null(box::name())) {
+    box::use(./`__tests__`)
 } else if (! interactive()) {
     # Redirect all output from the script. This is done to prevent unintended
     # clutter, but also to capture the script “description”.

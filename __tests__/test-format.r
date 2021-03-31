@@ -1,6 +1,6 @@
 context('Character string formatting')
 
-modules::import('../format', attach = 'repr')
+box::use(../format[repr])
 
 test_that('numbers are formatted correctly', {
     expect_that(repr(c(1, 2)), equals('1, 2'))

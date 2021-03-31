@@ -1,8 +1,9 @@
-sys = modules::import('sys')
+box::use(../..)
 
 "Output a raw timestamp"
 VERSION = '1.0'
 
+#' @export
 now = function () Sys.time()
 
 sys$run({

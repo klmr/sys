@@ -1,4 +1,4 @@
-cmd = modules::import('../cmd')
+cmd = box::use(../cmd)
 sink() # To show tests, since we’re never calling `sys$run`.
 
 #' Assert that a command line parse call shows the help

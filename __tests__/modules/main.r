@@ -1,5 +1,5 @@
-time = modules::import('./time')
-sys = modules::import('sys')
+box::use(./time)
+box::use(../..)
 
 "Output a formatted timestamp"
 VERSION = '2.0'

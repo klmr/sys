@@ -1,5 +1,5 @@
 run_rscript = function (name) {
-    script_path = sprintf('modules/modules/%s.r', name)
+    script_path = sprintf('modules/%s.r', name)
     system2('Rscript', script_path, stdout = TRUE, stderr = TRUE)
 }
 

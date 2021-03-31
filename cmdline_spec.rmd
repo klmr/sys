@@ -99,14 +99,14 @@ concerning the escaping of special characters).
 ## Test cases
 
 ```{r echo=FALSE, show='hide', message=FALSE}
-modules::import('./cmd', attach = TRUE)
+box::use(./cmd[...])
 
 # Make testable
 
 test_env = environment(parse)
-unlockBinding('.sys', test_env)
-unlockBinding('script_name', test_env$.sys)
-test_env$.sys$script_name = 'test'
+unlockBinding('sys', test_env)
+unlockBinding('script_name', test_env$sys)
+test_env$sys$script_name = 'test'
 
 test = function (cmdline, spec, expected) {
     if (missing(expected))
